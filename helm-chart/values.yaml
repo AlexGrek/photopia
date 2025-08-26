@@ -1,0 +1,64 @@
+# Default values for dcommunity-app.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: localhost:5000/photopia
+  pullPolicy: IfNotPresent
+  # tag is set dynamically by the Makefile. This is just a placeholder.
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 8000
+
+# Kubernetes Secret variables (these should be injected securely in production)
+# Values set here will be base64 encoded and stored in a Kubernetes Secret.
+# For production, use `helm install --set-file secret.jwtSecretKey=/path/to/secret.txt`
+# or a secrets management solution like Vault or Kubernetes Secrets Store CSI Driver.
+secret:
+  apikey: "change-this-api-key-secret-in-production"
+
+replicaCount: 1
+
+# Persistent Storage settings
+persistence:
+  enabled: true
+  # Size of the Persistent Volume Claim
+  size: 0.5Gi
+  # StorageClass name (e.g., "standard", "gp2", "azurefile").
+  # Set to null for default StorageClass or if using a pre-provisioned PV without a StorageClass.
+  storageClassName: null
+  # Access mode for the volume (e.g., ReadWriteOnce, ReadOnlyMany, ReadWriteMany)
+  accessMode: ReadWriteOnce
+  # For local development or single-node clusters, you can use hostPath
+  # IMPORTANT: hostPath is NOT suitable for production multi-node clusters.
+  # It's highly recommended to use a dynamic provisioner or pre-provisioned PVs.
+  hostPath:
+    enabled: true
+    path: "/var/data/photopia-storage"
+
+ingress:
+  enabled: true
+  name: photopia
+  host: photopia.dcommunity.space
+  certResolver: le
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts will run on environments with little
+  # resources, such as Minikube.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

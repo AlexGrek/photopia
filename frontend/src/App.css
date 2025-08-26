@@ -1,0 +1,31 @@
+#root {
+  background-color: black;
+  min-height: 100vh;
+}
+
+.fade-in-slide-up-item {
+  opacity: 0;
+  transform: translateY(4px);
+  animation: fade-in-slide-up 1s forwards;
+  animation-delay: .5s;
+}
+
+@keyframes fade-in-slide-up {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInKf {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fadeIn {
+  animation: fadeInKf 0.25s ease-out forwards;
+}

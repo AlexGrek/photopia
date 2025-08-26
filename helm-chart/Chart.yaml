@@ -1,0 +1,6 @@
+apiVersion: v2
+name: photopia
+description: A Helm chart for deploying the photopia FastAPI backend with React frontend.
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
