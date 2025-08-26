@@ -1,10 +1,9 @@
 
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, Loader2 } from 'lucide-react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { ChevronLeft, Loader2, Sigma } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { Gallery } from '../Models';
-import { IoWarningOutline } from 'react-icons/io5';
 import GalleryBrowser from '../components/GalleryBrowser';
 import Logo from '../components/Logo';
 
@@ -46,7 +45,7 @@ const GalleryPage: React.FC = () => {
     if (!gallery) {
         return (<div className='w-full min-h-screen text-white fadeIn'>
             {loading && <p className='animate-pulse'><Loader2 /></p>}
-            {error && <p className='animate-pulse'><IoWarningOutline />{error}</p>}
+            {error && <p className='animate-pulse'><Sigma />{error}</p>}
         </div>);
     }
 
