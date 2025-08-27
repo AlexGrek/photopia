@@ -86,6 +86,7 @@ const GalleryListPage: React.FC = () => {
                             <Link
                                 key={gallery.id}
                                 to={`/g/${gallery.id}`}
+                                state={{"gallery": gallery}}
                                 className="relative group block overflow-hidden rounded-lg shadow-xl cursor-pointer"
                             >
                                 <motion.div

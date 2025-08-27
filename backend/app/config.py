@@ -4,7 +4,7 @@ from pathlib import Path
 # --- Application Configuration ---
 # Load from environment variables for production readiness.
 # The `os.getenv` function returns `None` if the variable is not set.
-API_KEY = os.getenv("apikey")
+API_KEY = os.getenv("apikey", "some-api-key")
 
 # Root directory for all galleries and their content
 # The second argument to getenv() provides a default value if the environment variable is not set.
