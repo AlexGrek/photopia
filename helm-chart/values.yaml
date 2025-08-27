@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: localhost:5000/photopia
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # tag is set dynamically by the Makefile. This is just a placeholder.
   tag: "latest"
 

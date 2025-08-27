@@ -42,6 +42,7 @@ clean:
 # --- Helm Targets ---
 HELM_CHART_DIR := helm-chart
 KUBERNETES_NAMESPACE := default # Or your preferred namespace
+SECRET_KEY=jbkjgiygfuyrtdftrdfouyuiuouijkji8u77t785r45esedf
 
 helm-install: docker-push
 	@echo "Installing Helm chart for $(APP_NAME) in namespace $(KUBERNETES_NAMESPACE)..."
