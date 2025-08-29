@@ -240,7 +240,7 @@ def create_gallery_zip(gallery_id: str, gallery_path: Path, zip_path: Path):
     """Create zip file with all original images from gallery."""
     try:
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            for img_path in gallery_path.glob("images/*"):  # original images assumed in images/
+            for img_path in gallery_path.glob("images_full/*"):  # original images assumed in images/
                 if img_path.is_file():
                     zipf.write(img_path, arcname=img_path.name)
     finally:
@@ -254,7 +254,7 @@ async def download_zip(gallery_id: str, background_tasks: BackgroundTasks):
     if not gallery_path.exists():
         raise HTTPException(status_code=404, detail="Gallery not found")
 
-    zip_path = gallery_path / f"{gallery_id}.zip"
+    zip_path = gallery_path / f"{gallery_id}_full.zip"
 
     # If zip already exists → return it
     if zip_path.exists():
