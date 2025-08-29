@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import './App.css';
+import { NotificationProvider } from './contexts/NotificationContext';
 
 const GalleryListPage = lazy(() => import('./pages/GalleryListPage'));
 const GalleryPage = lazy(() => import('./pages/GalleryPage'));
@@ -21,20 +22,22 @@ const LoadingSpinner: React.FC = () => (
 // Main routing component to wrap the App.
 const RootApp: React.FC = () => {
   return (
-    <BrowserRouter>
-      <div className="bg-gray-950 min-h-screen">
-        <Suspense fallback={<LoadingSpinner />}>
-          <AnimatePresence mode="wait">
-            <Routes>
-              <Route path="/" element={<GalleryListPage />} />
-              <Route path="/g/:galleryId" element={<GalleryPage />} />
-              <Route path="/create-gallery" element={<CreateGalleryPage />} />
-              <Route path="/upload-images" element={<ImageUploaderPage />} />
-            </Routes>
-          </AnimatePresence>
-        </Suspense>
-      </div>
-    </BrowserRouter>
+    <NotificationProvider>
+      <BrowserRouter>
+        <div className="bg-gray-950 min-h-screen">
+          <Suspense fallback={<LoadingSpinner />}>
+            <AnimatePresence mode="wait">
+              <Routes>
+                <Route path="/" element={<GalleryListPage />} />
+                <Route path="/g/:galleryId" element={<GalleryPage />} />
+                <Route path="/create-gallery" element={<CreateGalleryPage />} />
+                <Route path="/upload-images" element={<ImageUploaderPage />} />
+              </Routes>
+            </AnimatePresence>
+          </Suspense>
+        </div>
+      </BrowserRouter>
+    </NotificationProvider>
   );
 };
 

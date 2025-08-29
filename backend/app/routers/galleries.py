@@ -5,7 +5,8 @@ import zipfile
 from pathlib import Path
 from typing import List, Optional
 from datetime import datetime
-from fastapi import APIRouter, HTTPException, status, File, UploadFile, FileResponse, BackgroundTasks
+from fastapi import APIRouter, HTTPException, status, File, UploadFile, BackgroundTasks
+from fastapi.responses import FileResponse
 from PIL import Image
 from aiofiles import open as aio_open
 
