@@ -262,10 +262,10 @@ async def download_zip(gallery_id: str, background_tasks: BackgroundTasks):
 
     # If zip creation is in progress → return message
     if zip_creation_locks.get(gallery_id):
-        return {"result": "zip creation already in progress"}
+        return {"result": "zip creation already in progress, please wait"}
 
     # Otherwise → schedule background task
     zip_creation_locks[gallery_id] = True
     background_tasks.add_task(create_gallery_zip, gallery_id, gallery_path, zip_path)
 
-    return {"result": "zip creation initiated"}
+    return {"result": "zip creation initiated, please wait and try again"}

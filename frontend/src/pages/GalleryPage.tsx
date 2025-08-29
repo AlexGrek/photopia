@@ -146,6 +146,7 @@ const GalleryPage: React.FC = () => {
                         >
                             <CloudDownload size={24} />
                         </button>
+                        {loading && <span className='animate-spin'><Loader2 size={24} /></span>}
                     </div>
                     <p className="text-lg text-gray-300">
                         by {gallery ? gallery.author : stateAuthor}
@@ -154,7 +155,6 @@ const GalleryPage: React.FC = () => {
             </motion.header>
 
             <main className="container mx-auto p-6 pt-10">
-                {loading && <p className='animate-spin'><Loader2 /></p>}
                 {gallery && gallery.images.length > 0 && <GalleryBrowser images={gallery.images} />}
             </main>
 
