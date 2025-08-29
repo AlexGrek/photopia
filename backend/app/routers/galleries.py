@@ -1,10 +1,11 @@
 import os
 import uuid
 import shutil
+import zipfile
 from pathlib import Path
 from typing import List, Optional
 from datetime import datetime
-from fastapi import APIRouter, HTTPException, status, File, UploadFile
+from fastapi import APIRouter, HTTPException, status, File, UploadFile, FileResponse, BackgroundTasks
 from PIL import Image
 from aiofiles import open as aio_open
 
@@ -231,3 +232,39 @@ async def upload_image_to_gallery(gallery_id: str, image_file: UploadFile = File
         "message": f"Image '{original_filename}' uploaded to gallery '{gallery.name}'",
         "image_id": image_id,
     }
+
+zip_creation_locks = {}
+
+def create_gallery_zip(gallery_id: str, gallery_path: Path, zip_path: Path):
+    """Create zip file with all original images from gallery."""
+    try:
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            for img_path in gallery_path.glob("images/*"):  # original images assumed in images/
+                if img_path.is_file():
+                    zipf.write(img_path, arcname=img_path.name)
+    finally:
+        # Mark creation as done
+        zip_creation_locks.pop(gallery_id, None)
+
+
+@router.get("/download_zip/{gallery_id}")
+async def download_zip(gallery_id: str, background_tasks: BackgroundTasks):
+    gallery_path = GALLERIES_ROOT_DIR / gallery_id
+    if not gallery_path.exists():
+        raise HTTPException(status_code=404, detail="Gallery not found")
+
+    zip_path = gallery_path / f"{gallery_id}.zip"
+
+    # If zip already exists → return it
+    if zip_path.exists():
+        return FileResponse(zip_path, media_type="application/zip", filename=f"{gallery_id}.zip")
+
+    # If zip creation is in progress → return message
+    if zip_creation_locks.get(gallery_id):
+        return {"result": "zip creation already in progress"}
+
+    # Otherwise → schedule background task
+    zip_creation_locks[gallery_id] = True
+    background_tasks.add_task(create_gallery_zip, gallery_id, gallery_path, zip_path)
+
+    return {"result": "zip creation initiated"}

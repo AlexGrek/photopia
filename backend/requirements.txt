@@ -6,3 +6,5 @@ aiofiles
 PyYAML
 python-dotenv
 black
+zipfile
+threading
