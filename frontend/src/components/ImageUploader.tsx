@@ -160,23 +160,51 @@ const ImageUploader: React.FC = () => {
     }
   };
 
+  // New function to handle uploads with a concurrency limit
+  const uploadWithConcurrencyLimit = async (files: UploadFile[], limit: number) => {
+    const queue = [...files]; // Use a copy of the files array as a queue
+    const workers = new Set<Promise<void>>(); // Use a Set to track active promises
+
+    const startNext = async () => {
+      if (queue.length === 0) return;
+
+      const fileToUpload = queue.shift();
+      if (!fileToUpload) return;
+
+      const task = uploadSingleFile(fileToUpload).finally(() => {
+        workers.delete(task); // Remove the task from the set when it's done
+        startNext(); // Start the next upload in the queue
+      });
+
+      workers.add(task);
+      return task;
+    };
+
+    // Start the initial set of concurrent uploads
+    const initialWorkers = [];
+    for (let i = 0; i < Math.min(limit, files.length); i++) {
+      initialWorkers.push(startNext());
+    }
+
+    // Wait for all initial workers and subsequent tasks to complete
+    await Promise.all(initialWorkers);
+  };
+
   const handleSubmit = async () => {
     if (!galleryId) {
       alert('Please enter a Gallery ID.');
       return;
     }
-
     const apiKey = localStorage.getItem(localStorageKey);
     if (!apiKey) {
       alert('API Key is missing. Please set the API key in local storage.');
       return;
     }
-
     setIsUploading(true);
     try {
-      // Create a copy to prevent mutation during iteration
       const filesToProcess = [...filesToUpload];
-      await Promise.all(filesToProcess.map(uploadSingleFile));
+      // Changed to use the new concurrency limited function.
+      await uploadWithConcurrencyLimit(filesToProcess, 4);
     } catch (error) {
       console.error('An error occurred during upload:', error);
     } finally {
@@ -195,7 +223,6 @@ const ImageUploader: React.FC = () => {
         <h2 className="text-3xl font-semibold text-center text-white flex items-center justify-center gap-2">
           <UploadCloud className="w-8 h-8 text-neutral-400" /> Upload Images
         </h2>
-        
         {/* Gallery ID Input */}
         <div className="space-y-2">
           <label htmlFor="galleryId" className="block text-sm font-medium text-neutral-400">
@@ -208,85 +235,95 @@ const ImageUploader: React.FC = () => {
             value={galleryId}
             onChange={handleGalleryIdChange}
             required
-            className="mt-1 block w-full px-4 py-2 bg-neutral-700 text-white rounded-md shadow-inner border border-transparent focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-neutral-500 sm:text-sm transition duration-200"
-            placeholder="e.g., my-travels-2024"
+            className="mt-1 block w-full px-4 py-2 bg-neutral-700 text-white rounded-md shadow-inner border border-transparent focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-neutral-500 sm:text-sm transition duration-150 ease-in-out"
+            placeholder="e.g., my-photo-gallery"
           />
         </div>
-
-        {/* Drag and Drop Area */}
-        <div 
-          onDragEnter={handleDrag} 
-          onDragLeave={handleDrag} 
-          onDragOver={handleDrag} 
+        
+        {/* Drag and Drop area */}
+        <div
+          className={`flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg p-6 text-center transition duration-200 ease-in-out ${
+            dragActive ? 'border-neutral-400 bg-neutral-700' : 'border-neutral-600 bg-neutral-800'
+          }`}
+          onDragEnter={handleDrag}
+          onDragLeave={handleDrag}
+          onDragOver={handleDrag}
           onDrop={handleDrop}
-          className={`flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-xl transition duration-200 
-            ${dragActive ? 'border-neutral-500 bg-neutral-700' : 'border-neutral-600 bg-neutral-800'}`}
+          onClick={triggerFileInput}
         >
           <input
             ref={fileInputRef}
             type="file"
-            multiple
-            accept="image/jpeg,image/jpg"
-            onChange={handleFileSelect}
+            id="file-upload"
             className="hidden"
+            multiple
+            onChange={handleFileSelect}
+            accept=".jpg, .jpeg"
           />
-          <div className="text-center space-y-2">
-            <span className="text-neutral-400 flex items-center justify-center gap-2">
-              <Image className="w-5 h-5" /> Drag & Drop images here
-            </span>
-            <span className="block text-neutral-500">or</span>
-            <button
-              type="button"
-              onClick={triggerFileInput}
-              className="py-2 px-4 rounded-md text-sm font-medium text-neutral-900 bg-neutral-200 hover:bg-neutral-300 transition duration-200"
-            >
-              Browse Files
-            </button>
+          <div className="flex flex-col items-center justify-center space-y-2">
+            <UploadCloud className="w-12 h-12 text-neutral-400" />
+            <p className="text-sm text-neutral-400">
+              <span className="font-semibold text-white">Click to upload</span> or drag and drop
+            </p>
+            <p className="text-xs text-neutral-500">Only JPG and JPEG files are allowed.</p>
           </div>
         </div>
 
-        {/* Global Progress Bar (Conditional) */}
-        {filesToUpload.length > 3 && (
-          <div className="space-y-2 pt-4 border-t border-neutral-700">
-            <h3 className="text-lg font-medium text-white">Global Progress:</h3>
-            <div className="h-2 bg-neutral-500 rounded-full overflow-hidden">
+        {/* Upload Button and Progress */}
+        <div className="flex items-center justify-between">
+          <button
+            onClick={handleSubmit}
+            className={`w-full py-2 px-4 rounded-md font-semibold transition duration-200 ease-in-out ${
+              filesToUpload.length === 0 || isUploading
+                ? 'bg-neutral-600 text-neutral-400 cursor-not-allowed'
+                : 'bg-indigo-600 text-white hover:bg-indigo-700'
+            }`}
+            disabled={filesToUpload.length === 0 || isUploading}
+          >
+            {isUploading ? 'Uploading...' : `Upload ${filesToUpload.length} Files`}
+          </button>
+        </div>
+
+        {/* Global Progress Bar */}
+        {filesToUpload.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-neutral-400">
+              Overall Progress: {uploadedCount}/{filesToUpload.length} files
+            </p>
+            <div className="w-full bg-neutral-700 rounded-full h-2.5">
               <div
-                className="h-full bg-neutral-200 transition-all duration-300"
+                className="bg-indigo-500 h-2.5 rounded-full transition-all duration-300 ease-in-out"
                 style={{ width: `${globalProgress}%` }}
               ></div>
             </div>
-            <p className="text-sm text-neutral-400 text-right">
-              {uploadedCount} of {filesToUpload.length} files uploaded
-            </p>
           </div>
         )}
 
-        {/* Upload Button */}
-        <button
-          onClick={handleSubmit}
-          type="button"
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-lg text-sm font-medium text-neutral-900 bg-neutral-200 hover:bg-neutral-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-400 disabled:opacity-50 transition duration-200"
-          disabled={isUploading || !galleryId || filesToUpload.length === 0}
-        >
-          {isUploading ? 'Uploading...' : `Upload ${filesToUpload.length} file(s)`}
-        </button>
-
-        {/* File List and Progress Bars */}
+        {/* File List */}
         {filesToUpload.length > 0 && (
-          <div className="space-y-4 pt-4 border-t border-neutral-700">
-            <h3 className="text-lg font-medium text-white">Files to Upload:</h3>
-            <ul className="space-y-2 max-h-60 overflow-y-auto pr-2">
-              {filesToUpload.map(fileItem => (
-                <li key={fileItem.id} className="p-4 bg-neutral-700 rounded-lg flex items-center gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm font-mono text-neutral-300 truncate">
-                        {fileItem.file.name}
-                      </span>
-                      <button 
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium text-white">Files to Upload</h3>
+            <ul className="space-y-3 max-h-60 overflow-y-auto">
+              {filesToUpload.map((fileItem) => (
+                <li
+                  key={fileItem.id}
+                  className="flex items-center justify-between p-3 bg-neutral-700 rounded-lg shadow"
+                >
+                  <div className="flex items-center space-x-3 truncate">
+                    <Image className="w-5 h-5 flex-shrink-0 text-neutral-400" />
+                    <span className="text-sm font-medium truncate text-white">{fileItem.file.name}</span>
+                  </div>
+                  <div className="flex-1 min-w-0 ml-4">
+                    <div className="flex justify-end items-center space-x-2">
+                      <p className="text-xs font-medium text-neutral-400">
+                        {fileItem.status === 'uploading' || fileItem.status === 'success' ? `${fileItem.progress}%` : ''}
+                      </p>
+                      <button
                         onClick={() => removeFile(fileItem.id)}
-                        className="text-neutral-500 hover:text-white transition duration-200"
+                        className="text-neutral-400 hover:text-red-500 transition-colors"
+                        aria-label="Remove file"
                         title="Remove file"
+                        disabled={isUploading}
                       >
                         <X className="w-4 h-4" />
                       </button>
