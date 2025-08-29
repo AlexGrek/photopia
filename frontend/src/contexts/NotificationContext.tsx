@@ -43,7 +43,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className={`px-4 py-2 rounded-2xl shadow-lg text-white backdrop-blur-md bg-opacity-60
+              className={`px-4 py-2 rounded-2xl shadow-lg font-light text-white backdrop-blur-md bg-opacity-40
                 ${
                   n.type === "success"
                     ? "bg-green-600/80"
