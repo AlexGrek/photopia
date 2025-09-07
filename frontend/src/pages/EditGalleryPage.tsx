@@ -4,7 +4,6 @@ import { ChevronLeft, FolderPen, Loader2, MenuSquare, Sigma, Trash2 } from 'luci
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { Gallery, ImageModel } from '../Models';
-import GalleryBrowser from '../components/GalleryBrowser';
 import Logo from '../components/Logo';
 import { useNotification } from '../contexts/NotificationContext';
 import { localStorageKey } from '../components/ApiKeyForm';
