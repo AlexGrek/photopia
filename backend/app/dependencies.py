@@ -9,7 +9,7 @@ class APIKeyAuthMiddleware(BaseHTTPMiddleware):
     This uses a class-based approach for middleware.
     """
     async def dispatch(self, request: Request, call_next):
-        if request.method == "POST":
+        if request.method in ["POST", "PUT", "DELETE"]:
             api_key = request.headers.get("X-Api-Key")
             if not api_key or api_key != API_KEY:
                 return JSONResponse(

@@ -3,7 +3,7 @@ import uuid
 import shutil
 import zipfile
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, status, File, UploadFile, BackgroundTasks
 from fastapi.responses import FileResponse
@@ -12,7 +12,13 @@ from aiofiles import open as aio_open
 
 # Local imports from our new file structure
 from app.models import Gallery, GalleryThumbnail, ImageModel, GalleryData, ImageSizes
-from app.database import galleries_db, save_gallery_metadata
+from app.database import (
+    delete_gallery_image,
+    galleries_db,
+    purge_gallery,
+    save_gallery_metadata,
+    update_gallery_meta,
+)
 from app.config import GALLERIES_ROOT_DIR, THUMB_SIZE, SMALL_SIZE
 from app.utils import generate_readable_id
 
@@ -31,6 +37,45 @@ async def get_all_galleries():
     Returns a list of all available galleries.
     """
     return [GalleryThumbnail.from_gallery(x) for x in list(galleries_db.values())]
+
+
+@router.delete(
+    "/gallery",
+    response_model=Optional[Gallery],
+    summary="Delete a single gallery by ID",
+)
+async def delete_gallery(gallery_id: str):
+    """
+    Returns a specific gallery by its ID.
+    """
+    gallery = galleries_db.get(gallery_id)
+    if not gallery:
+        raise HTTPException(status_code=404, detail="Gallery not found")
+    purge_gallery(gallery)
+    return gallery
+
+
+@router.put(
+    "/gallery",
+    response_model=Optional[Gallery],
+    summary="DeleUpdate some props on a single gallery by ID",
+)
+async def modify_gallery(gallery_id: str, data: Dict[str, Any]):
+    """
+    Returns a specific gallery by its ID.
+    """
+    gallery = galleries_db.get(gallery_id)
+    if not gallery:
+        raise HTTPException(status_code=404, detail="Gallery not found")
+    if "name" in data:
+        gallery.name = data["name"]
+    if "author" in data:
+        gallery.author = data["author"]
+    if "coverImageUrl" in data:
+        gallery.coverImageUrl = data["coverImageUrl"]
+    gallery.lastUpdateDate = datetime.now()
+    update_gallery_meta(gallery)
+    return gallery
 
 
 @router.get(
@@ -124,6 +169,26 @@ async def update_gallery(gallery_id: str, data: GalleryData):
     gallery.name = data.name
     gallery.author = data.author
     gallery.lastUpdateDate = datetime.now()
+
+    # Update gallery metadata in file
+    save_gallery_metadata(gallery)
+
+    return gallery
+
+
+@router.delete("/image", response_model=Gallery, summary="Update an existing gallery")
+async def delete_image(gallery_id: str, image_id: str):
+    """
+    Updates the name or description of an existing gallery.
+    """
+    gallery = galleries_db.get(gallery_id)
+    if not gallery:
+        raise HTTPException(status_code=404, detail="Gallery not found")
+
+    gallery.lastUpdateDate = datetime.now()
+
+    delete_gallery_image(gallery, image_id)
+    update_gallery_meta(gallery)
 
     # Update gallery metadata in file
     save_gallery_metadata(gallery)
@@ -234,13 +299,17 @@ async def upload_image_to_gallery(gallery_id: str, image_file: UploadFile = File
         "image_id": image_id,
     }
 
+
 zip_creation_locks = {}
+
 
 def create_gallery_zip(gallery_id: str, gallery_path: Path, zip_path: Path):
     """Create zip file with all original images from gallery."""
     try:
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            for img_path in gallery_path.glob("images_full/*"):  # original images assumed in images/
+            for img_path in gallery_path.glob(
+                "images_full/*"
+            ):  # original images assumed in images/
                 if img_path.is_file():
                     zipf.write(img_path, arcname=img_path.name)
     finally:
@@ -258,7 +327,9 @@ async def download_zip(gallery_id: str, background_tasks: BackgroundTasks):
 
     # If zip already exists → return it
     if zip_path.exists():
-        return FileResponse(zip_path, media_type="application/zip", filename=f"{gallery_id}.zip")
+        return FileResponse(
+            zip_path, media_type="application/zip", filename=f"{gallery_id}.zip"
+        )
 
     # If zip creation is in progress → return message
     if zip_creation_locks.get(gallery_id):

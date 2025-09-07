@@ -3,9 +3,10 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import './App.css';
 import { NotificationProvider } from './contexts/NotificationContext';
+import GalleryPage from './pages/GalleryPage';
+import EditGalleryPage from './pages/EditGalleryPage';
 
 const GalleryListPage = lazy(() => import('./pages/GalleryListPage'));
-const GalleryPage = lazy(() => import('./pages/GalleryPage'));
 const CreateGalleryPage = lazy(() => import('./pages/CreateGalleryPage'));
 const ImageUploaderPage = lazy(() => import('./pages/ImageUploaderPage'));
 
@@ -30,6 +31,7 @@ const RootApp: React.FC = () => {
               <Routes>
                 <Route path="/" element={<GalleryListPage />} />
                 <Route path="/g/:galleryId" element={<GalleryPage />} />
+                <Route path="/edit/:galleryId" element={<EditGalleryPage />} />
                 <Route path="/create-gallery" element={<CreateGalleryPage />} />
                 <Route path="/upload-images" element={<ImageUploaderPage />} />
               </Routes>

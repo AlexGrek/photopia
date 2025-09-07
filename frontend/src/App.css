@@ -29,3 +29,9 @@
 .fadeIn {
   animation: fadeInKf 0.25s ease-out forwards;
 }
+
+.fadeInDelayed {
+  opacity: 0;
+  animation: fadeInKf 0.8s ease-out forwards;
+  animation-delay: 0.7s;
+}

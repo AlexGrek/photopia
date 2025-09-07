@@ -1,12 +1,13 @@
 
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, CloudDownload, Loader2, Sigma } from 'lucide-react';
+import { ChevronLeft, CloudDownload, Loader2, MenuSquare, Sigma } from 'lucide-react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { Gallery, GalleryThumbnail } from '../Models';
 import GalleryBrowser from '../components/GalleryBrowser';
 import Logo from '../components/Logo';
 import { useNotification } from '../contexts/NotificationContext';
+import { localStorageKey } from '../components/ApiKeyForm';
 
 const GalleryPage: React.FC = () => {
     const { galleryId } = useParams<{ galleryId: string }>();
@@ -18,6 +19,8 @@ const GalleryPage: React.FC = () => {
 
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+
+    const isAdmin = localStorage.getItem(localStorageKey) != null
 
     const { notify } = useNotification();
 
@@ -102,7 +105,7 @@ const GalleryPage: React.FC = () => {
 
     // If the gallery is not found, render a message or redirect.
     if (!gallery && (!state || !state.gallery)) {
-        return (<div className='w-full min-h-screen text-white fadeIn'>
+        return (<div className='w-full min-h-screen text-white'>
             {loading && <p className='animate-pulse'><Loader2 /></p>}
             {error && <p className='animate-pulse'><Sigma />{error}</p>}
         </div>);
@@ -114,7 +117,7 @@ const GalleryPage: React.FC = () => {
     const stateAuthor = state.gallery ? state.gallery.author : '';
 
     return (
-        <div className="bg-gray-950 text-white min-h-screen font-sans fadeIn">
+        <div className="bg-gray-950 text-white min-h-screen font-sans">
             <motion.header
                 layoutId={`gallery-card-${gallery ? gallery.id : stateId}`}
                 className="relative w-full h-64 overflow-hidden"
@@ -129,7 +132,7 @@ const GalleryPage: React.FC = () => {
                     }}
                 />
                 <div className="absolute inset-0 bg-black/50 backdrop-blur-md flex flex-col justify-end p-6 md:p-10">
-                    <div className='absolute' style={{ transform: "translate(-1em, -9.5em)" }}><Logo /></div>
+                    <div className='absolute fadeInDelayed' style={{ transform: "translate(-1em, -9.5em)" }}><Logo /></div>
                     <div className="flex items-center space-x-4 mb-4">
                         <button
                             onClick={() => navigate('/')}
@@ -146,6 +149,12 @@ const GalleryPage: React.FC = () => {
                         >
                             <CloudDownload size={24} />
                         </button>
+                        {isAdmin && <button
+                            onClick={() => navigate(`/edit/${galleryId}`)}
+                            className="bg-gray-800/50 backdrop-blur-sm p-2 rounded-full hover:bg-gray-700/50 transition-colors"
+                        >
+                            <MenuSquare size={24} />
+                        </button>}
                         {loading && <span className='animate-spin'><Loader2 size={24} /></span>}
                     </div>
                     <p className="text-lg text-gray-300">

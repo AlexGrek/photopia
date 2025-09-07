@@ -6,3 +6,4 @@ aiofiles
 PyYAML
 python-dotenv
 black
+pickledb
