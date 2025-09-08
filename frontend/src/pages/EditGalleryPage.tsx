@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, FolderPen, Loader2, MenuSquare, Sigma, Trash2 } from 'lucide-react';
+import { ChevronLeft, FolderPen, Loader2, MenuSquare, Save, Sigma, Trash2 } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { Gallery, ImageModel } from '../Models';
@@ -276,7 +276,7 @@ const EditGalleryPage: React.FC = () => {
                 />
                 <div className="absolute inset-0 bg-black/50 backdrop-blur-md flex flex-col justify-end p-6 md:p-10">
                     <div className='absolute' style={{ transform: "translate(-1em, -9.5em)" }}><Logo /></div>
-                    <div className="flex items-center space-x-4 mb-4">
+                    <div className="flex flex-wrap items-center space-x-4 mb-4">
                         <button
                             onClick={() => navigate('/')}
                             className="bg-gray-800/50 backdrop-blur-sm p-2 rounded-full hover:bg-gray-700/50 transition-colors"
@@ -295,12 +295,12 @@ const EditGalleryPage: React.FC = () => {
                         >
                             <Trash2 size={24} />
                         </button>
-                        {isAdmin && <button
-                            onClick={() => navigate(`/edit/${galleryId}`)}
+                        <button
+                            onClick={() => navigate(`/g/${galleryId}`)}
                             className="bg-gray-800/50 backdrop-blur-sm p-2 rounded-full hover:bg-gray-700/50 transition-colors"
                         >
-                            <MenuSquare size={24} />
-                        </button>}
+                            <Save size={24} />
+                        </button>
                         {loading && <span className='animate-spin'><Loader2 size={24} /></span>}
                     </div>
                     <p className="text-lg text-gray-300">
@@ -310,11 +310,11 @@ const EditGalleryPage: React.FC = () => {
             </motion.header>
 
             <main className="container mx-auto p-6 pt-10">
-                {gallery && gallery.images.length > 0 && <GalleryViewer 
-                gallery={gallery} 
-                onBatchDelete={handleDeleteImages}
-                onImageSetAsCover={handleChangeCover}
-                onAuthorChange={handleRenameGalleryAuthor} />}
+                {gallery && gallery.images.length > 0 && <GalleryViewer
+                    gallery={gallery}
+                    onBatchDelete={handleDeleteImages}
+                    onImageSetAsCover={handleChangeCover}
+                    onAuthorChange={handleRenameGalleryAuthor} />}
             </main>
 
             {/* Footer */}
