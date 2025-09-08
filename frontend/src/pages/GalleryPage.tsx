@@ -15,7 +15,7 @@ const GalleryPage: React.FC = () => {
     const navigate = useNavigate();
 
     const location = useLocation();
-    const state = location.state as { gallery?: GalleryThumbnail; };
+    const state = location.state as { gallery?: GalleryThumbnail; } | null;
 
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -111,10 +111,10 @@ const GalleryPage: React.FC = () => {
         </div>);
     }
 
-    const stateId = state.gallery ? state.gallery.id : '';
-    const stateCover = state.gallery ? state.gallery.coverImageUrl : '';
-    const stateName = state.gallery ? state.gallery.name : '';
-    const stateAuthor = state.gallery ? state.gallery.author : '';
+    const stateId = state?.gallery ? state.gallery.id : '';
+    const stateCover = state?.gallery ? state.gallery.coverImageUrl : '';
+    const stateName = state?.gallery ? state.gallery.name : '';
+    const stateAuthor = state?.gallery ? state.gallery.author : '';
 
     return (
         <div className="bg-gray-950 text-white min-h-screen font-sans">

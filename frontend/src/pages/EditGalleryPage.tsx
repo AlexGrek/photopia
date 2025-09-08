@@ -244,10 +244,10 @@ const EditGalleryPage: React.FC = () => {
                 isVisible={deleteOpen}
                 onConfirm={handleDeleteGallery}
                 onCancel={() => setDeleteOpen(false)}
-                title={`Delete '${gallery.name}'?`}
+                title={`Delete "${gallery.name}"?`}
                 confirmText="Delete"
                 cancelText="Cancel"
-                message="This action cannot be undone. Are you sure you want to delete this item?" />
+                message="This action cannot be undone. Are you sure you want to delete full gallery?" />
             <motion.header
                 layoutId={`gallery-card-${gallery ? gallery.id : ''}`}
                 className="relative w-full h-64 overflow-hidden"
@@ -265,7 +265,7 @@ const EditGalleryPage: React.FC = () => {
                     <div className='absolute' style={{ transform: "translate(-1em, -9.5em)" }}><Logo /></div>
                     <div className="flex flex-wrap items-center space-x-4 mb-4">
                         <button
-                            onClick={() => navigate('/')}
+                            onClick={() => navigate(`/g/${galleryId}`)}
                             className="bg-gray-800/50 backdrop-blur-sm p-2 rounded-full hover:bg-gray-700/50 transition-colors"
                         >
                             <ChevronLeft size={24} />
