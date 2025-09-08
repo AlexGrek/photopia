@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, FolderPen, Loader2, MenuSquare, Save, Sigma, Trash2 } from 'lucide-react';
+import { ChevronLeft, FolderPen, Loader2, MenuSquare, Save, Sigma, Trash2, UploadCloud } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { Gallery, ImageModel } from '../Models';
@@ -8,6 +8,7 @@ import Logo from '../components/Logo';
 import { useNotification } from '../contexts/NotificationContext';
 import { localStorageKey } from '../components/ApiKeyForm';
 import { GalleryViewer } from '../components/GalleryViewer';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const EditGalleryPage: React.FC = () => {
     const { galleryId } = useParams<{ galleryId: string }>();
@@ -17,7 +18,7 @@ const EditGalleryPage: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    const isAdmin = localStorage.getItem(localStorageKey) != null
+    const [deleteOpen, setDeleteOpen] = useState(false);
 
     const { notify } = useNotification();
 
@@ -37,38 +38,16 @@ const EditGalleryPage: React.FC = () => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            // Check the Content-Type header to determine how to handle the response
-            const contentType = response.headers.get('content-type');
 
-            if (contentType && contentType.includes('application/zip')) {
-                // Handle ZIP file download
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                // Extract filename from Content-Disposition header, or use a default
-                const contentDisposition = response.headers.get('content-disposition');
-                const filenameMatch = contentDisposition && contentDisposition.match(/filename="([^"]+)"/);
-                const filename = filenameMatch ? filenameMatch[1] : 'download.zip';
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                window.URL.revokeObjectURL(url);
-                notify(`Successfully downloaded file: ${filename}`);
-            } else if (contentType && contentType.includes('application/json')) {
-                // Handle JSON response
-                const data = await response.json();
-                if (data.result) {
-                    notify(`${JSON.stringify(data.result, null, 2)}`);
-                } else {
-                    notify('Ok.');
-                }
-                navigate("/")
+            // Handle JSON response
+            const data = await response.json();
+            if (data.result) {
+                notify(`${JSON.stringify(data.result, null, 2)}`);
             } else {
-                // Fallback for other content types
-                notify('Unsupported content type received from server.');
+                notify('Ok.');
             }
+            navigate("/")
+
         } catch (error: unknown) {
             if (error instanceof Error) {
                 notify(`Failed to fetch data: ${error.message}`, 'error');
@@ -261,6 +240,14 @@ const EditGalleryPage: React.FC = () => {
 
     return (
         <div className="bg-gray-950 text-white min-h-screen font-sans">
+            <ConfirmationModal
+                isVisible={deleteOpen}
+                onConfirm={handleDeleteGallery}
+                onCancel={() => setDeleteOpen(false)}
+                title={`Delete '${gallery.name}'?`}
+                confirmText="Delete"
+                cancelText="Cancel"
+                message="This action cannot be undone. Are you sure you want to delete this item?" />
             <motion.header
                 layoutId={`gallery-card-${gallery ? gallery.id : ''}`}
                 className="relative w-full h-64 overflow-hidden"
@@ -290,16 +277,16 @@ const EditGalleryPage: React.FC = () => {
                             className="bg-gray-800/50 backdrop-blur-sm p-2 rounded-full hover:bg-gray-700/50 transition-colors"
                         ><FolderPen size={24} /></button>
                         <button
-                            onClick={() => handleDeleteGallery()}
+                            onClick={() => navigate(`/upload-images?galleryid=${galleryId}`)}
+                            className="bg-gray-800/50 backdrop-blur-sm p-2 rounded-full hover:bg-gray-700/50 transition-colors"
+                        >
+                            <UploadCloud size={24} />
+                        </button>
+                        <button
+                            onClick={() => setDeleteOpen(true)}
                             className="bg-gray-800/50 backdrop-blur-sm p-2 rounded-full hover:bg-gray-700/50 transition-colors"
                         >
                             <Trash2 size={24} />
-                        </button>
-                        <button
-                            onClick={() => navigate(`/g/${galleryId}`)}
-                            className="bg-gray-800/50 backdrop-blur-sm p-2 rounded-full hover:bg-gray-700/50 transition-colors"
-                        >
-                            <Save size={24} />
                         </button>
                         {loading && <span className='animate-spin'><Loader2 size={24} /></span>}
                     </div>
@@ -309,7 +296,7 @@ const EditGalleryPage: React.FC = () => {
                 </div>
             </motion.header>
 
-            <main className="container mx-auto p-6 pt-10">
+            <main className="container mx-auto p-6 pt-10 fadeIn">
                 {gallery && gallery.images.length > 0 && <GalleryViewer
                     gallery={gallery}
                     onBatchDelete={handleDeleteImages}
