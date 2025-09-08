@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, FolderPen, Loader2, MenuSquare, Save, Sigma, Trash2, UploadCloud } from 'lucide-react';
+import { ChevronLeft, FolderPen, Loader2, Sigma, Trash2, UploadCloud } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { Gallery, ImageModel } from '../Models';
