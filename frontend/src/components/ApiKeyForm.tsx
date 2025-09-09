@@ -60,6 +60,7 @@ export default function ApiKeyForm() {
       </div>
       <div>
         <button
+          id='submit-btn'
           type="submit"
           className={btnClass}
         >
@@ -68,8 +69,8 @@ export default function ApiKeyForm() {
       </div>
 
       {savedKey != null && <div className='flex w-full fadeIn'>
-        <Link className={btnClass + " m-1"} to='/create-gallery'><PlusCircle/>Create gallery</Link>
-        <Link className={btnClass + " m-1"} to='/upload-images'><CloudUpload/>Upload images</Link>
+        <Link id='create-link' className={btnClass + " m-1"} to='/create-gallery'><PlusCircle/>Create gallery</Link>
+        <Link id='upload-link' className={btnClass + " m-1"} to='/upload-images'><CloudUpload/>Upload images</Link>
       </div>}
     </form>
   );

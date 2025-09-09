@@ -57,12 +57,14 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                         {/* Buttons */}
                         <div className="flex gap-3 px-6 pb-6">
                             <button
+                                id='cancel-modal-btn'
                                 onClick={onCancel}
                                 className="flex-1 px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800"
                             >
                                 {cancelText}
                             </button>
                             <button
+                                id='confirm-modal-btn'
                                 onClick={onConfirm}
                                 className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800"
                             >

@@ -265,24 +265,28 @@ const EditGalleryPage: React.FC = () => {
                     <div className='absolute' style={{ transform: "translate(-1em, -9.5em)" }}><Logo /></div>
                     <div className="flex flex-wrap items-center space-x-4 mb-4">
                         <button
+                            id='back-btn'
                             onClick={() => navigate(`/g/${galleryId}`)}
                             className="bg-gray-800/50 backdrop-blur-sm p-2 rounded-full hover:bg-gray-700/50 transition-colors"
                         >
                             <ChevronLeft size={24} />
                         </button>
-                        <input className="text-4xl font-semibold" value={gallery ? gallery.name : ''} onChange={(e) => setGallery({ ...gallery, name: e.target.value })}>
+                        <input id='gal-name-inp' className="text-4xl font-semibold" value={gallery ? gallery.name : ''} onChange={(e) => setGallery({ ...gallery, name: e.target.value })}>
                         </input>
                         <button
+                            id='rnm-btn'
                             onClick={() => handleRenameGallery()}
                             className="bg-gray-800/50 backdrop-blur-sm p-2 rounded-full hover:bg-gray-700/50 transition-colors"
                         ><FolderPen size={24} /></button>
                         <button
+                            id='upload-btn'
                             onClick={() => navigate(`/upload-images?galleryid=${galleryId}`)}
                             className="bg-gray-800/50 backdrop-blur-sm p-2 rounded-full hover:bg-gray-700/50 transition-colors"
                         >
                             <UploadCloud size={24} />
                         </button>
                         <button
+                            id='del-btn'
                             onClick={() => setDeleteOpen(true)}
                             className="bg-gray-800/50 backdrop-blur-sm p-2 rounded-full hover:bg-gray-700/50 transition-colors"
                         >

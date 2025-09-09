@@ -144,6 +144,7 @@ const GalleryPage: React.FC = () => {
                             {gallery ? gallery.name : stateName}
                         </h1>
                         <button
+                            id="download-zip"
                             onClick={() => fetchData()}
                             className="bg-gray-800/50 backdrop-blur-sm p-2 rounded-full hover:bg-gray-700/50 transition-colors"
                         >
@@ -151,6 +152,7 @@ const GalleryPage: React.FC = () => {
                         </button>
                         {isAdmin && <button
                             onClick={() => navigate(`/edit/${galleryId}`)}
+                            id="admin-edit"
                             className="bg-gray-800/50 backdrop-blur-sm p-2 rounded-full hover:bg-gray-700/50 transition-colors"
                         >
                             <MenuSquare size={24} />

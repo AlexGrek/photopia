@@ -272,6 +272,7 @@ const ImageUploader: React.FC = () => {
         {/* Upload Button and Progress */}
         <div className="flex items-center justify-between">
           <button
+            id="file-upload-submit"
             onClick={handleSubmit}
             className={`w-full py-2 px-4 rounded-md font-semibold transition duration-200 ease-in-out ${
               filesToUpload.length === 0 || isUploading

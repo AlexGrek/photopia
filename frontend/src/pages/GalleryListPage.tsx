@@ -46,6 +46,7 @@ const GalleryListPage: React.FC = () => {
                 <Logo/>
                 <Menu as="div" className="relative">
                     <button
+                        id="login-btn"
                         onClick={() => setIsLoginModalOpen(true)}
                         className="bg-gray-900 hover:bg-gray-700 cursor-pointer text-white font-medium py-2 px-4 rounded-2xl transition-colors duration-200 flex items-center gap-2"
                     >

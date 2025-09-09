@@ -57,7 +57,7 @@ const GalleryBrowser: React.FC<GalleryImagesProps> = ({ images }) => {
     })
   }, []);
 
-  return <div className="m-auto fade-in-slide-up-item">
+  return <div className="m-auto fade-in-slide-up-item" id="gallery">
     <ImageGallery imagesInfoArray={convertGalleryImages(images)} gapSize={4} lazy/>
   </div>
 }
