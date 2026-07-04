@@ -5,9 +5,9 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from pathlib import Path
 
 # Local imports from our new file structure
-from app.routers import galleries
+from app.routers import galleries, moodboards
 from app.dependencies import APIKeyAuthMiddleware
-from app.config import REACT_BUILD_DIR, GALLERIES_ROOT_DIR
+from app.config import REACT_BUILD_DIR, GALLERIES_ROOT_DIR, MOODBOARDS_ROOT_DIR
 
 # Initialize the main FastAPI app
 app = FastAPI(
@@ -20,9 +20,17 @@ app.add_middleware(APIKeyAuthMiddleware)
 # Include the API router for gallery endpoints
 app.include_router(galleries.router, prefix="/api/v1")
 
+# Include the API router for moodboard endpoints
+app.include_router(moodboards.router, prefix="/api/v1")
+
 # Mount static directories
 # Serve images from the galleries root directory
 app.mount("/galleries", StaticFiles(directory=GALLERIES_ROOT_DIR), name="galleries")
+
+# Serve images from the moodboards root directory
+app.mount(
+    "/moodboard-media", StaticFiles(directory=MOODBOARDS_ROOT_DIR), name="moodboard-media"
+)
 
 # Mount the static directory for the React SPA build
 if REACT_BUILD_DIR.exists():

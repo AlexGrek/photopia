@@ -1,43 +1,46 @@
 import React, { useEffect, useState } from 'react';
-import { LoaderCircle, SquarePlus } from 'lucide-react';
+import { LoaderCircle, SquarePlus, Palette } from 'lucide-react';
 import { Menu } from '@headlessui/react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import type { GalleryThumbnail } from '../Models';
+import type { MoodboardThumbnail } from '../Models';
 import Modal from '../components/Modal';
 import ApiKeyForm from '../components/ApiKeyForm';
 import Logo from '../components/Logo';
 import PageTabs from '../components/PageTabs';
+import { localStorageKey } from '../components/ApiKeyForm';
 
-const GalleryListPage: React.FC = () => {
-    const [galleries, setGalleries] = useState<GalleryThumbnail[]>([]);
+const MoodboardListPage: React.FC = () => {
+    const [moodboards, setMoodboards] = useState<MoodboardThumbnail[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
+    const isAdmin = localStorage.getItem(localStorageKey) != null;
+
     useEffect(() => {
-        const fetchG = async () => {
+        const fetchM = async () => {
             try {
-                const response = await fetch('/api/v1/galleries');
+                const response = await fetch('/api/v1/moodboards');
 
                 if (!response.ok) {
-                    throw new Error(`Failed to fetch galleries: ${response.status} ${response.statusText}`);
+                    throw new Error(`Failed to fetch moodboards: ${response.status} ${response.statusText}`);
                 }
 
                 const data = await response.json();
                 if (Array.isArray(data)) {
-                    setGalleries(data as GalleryThumbnail[]);
+                    setMoodboards(data as MoodboardThumbnail[]);
                 } else {
                     throw new Error("Invalid data format received from server");
                 }
             } catch (err: any) {
-                console.error("Error fetching galleries:", err);
+                console.error("Error fetching moodboards:", err);
                 setError(err.message || "Unexpected error occurred");
             } finally {
                 setLoading(false);
             }
         };
-        fetchG();
+        fetchM();
     }, []);
 
     return (
@@ -61,7 +64,7 @@ const GalleryListPage: React.FC = () => {
             <main className="container mx-auto p-6 pt-10 flex-grow fadeIn">
                 <PageTabs />
                 <h1 className="text-3xl font-light mx-auto w-full mb-8 text-center sm:text-left">
-                    Galleries
+                    Moodboards
                 </h1>
 
                 <Modal
@@ -85,34 +88,49 @@ const GalleryListPage: React.FC = () => {
 
                 {!loading && !error && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                        {galleries.map((gallery) => (
+                        {isAdmin && (
                             <Link
-                                key={gallery.id}
-                                to={`/g/${gallery.id}`}
-                                state={{"gallery": gallery}}
+                                id="create-moodboard-card"
+                                to="/create-moodboard"
+                                className="relative group flex flex-col items-center justify-center overflow-hidden rounded-lg shadow-xl cursor-pointer h-64 border-2 border-dashed border-gray-700 hover:border-gray-500 transition-colors duration-300 text-gray-400 hover:text-white"
+                            >
+                                <SquarePlus size={40} />
+                                <span className="mt-2 font-medium">Create moodboard</span>
+                            </Link>
+                        )}
+                        {moodboards.map((moodboard) => (
+                            <Link
+                                key={moodboard.id}
+                                to={`/m/${moodboard.id}`}
                                 className="relative group block overflow-hidden rounded-lg shadow-xl cursor-pointer"
                             >
                                 <motion.div
-                                    layoutId={`gallery-card-${gallery.id}`}
-                                    className="relative block overflow-hidden rounded-lg shadow-xl cursor-pointer transform transition-transform duration-300 hover:scale-105"
+                                    layoutId={`moodboard-card-${moodboard.id}`}
+                                    className="relative block overflow-hidden rounded-lg shadow-xl cursor-pointer transform transition-transform duration-300 hover:scale-105 h-64"
+                                    style={{ borderTop: `4px solid ${moodboard.headerColor}` }}
                                 >
-                                    <motion.img
-                                        layout="position"
-                                        src={gallery.coverImageUrl}
-                                        alt={`Cover for ${gallery.name}`}
-                                        className="w-full h-64 object-cover object-center transition-transform duration-300 group-hover:scale-110"
-                                        onError={(e) => {
-                                            e.currentTarget.src = "https://placehold.co/600x600/1f2937/d1d5db?text=Image+Not+Found";
-                                            e.currentTarget.onerror = null;
-                                        }}
-                                    />
+                                    {moodboard.coverImageUrl ? (
+                                        <img
+                                            src={moodboard.coverImageUrl}
+                                            alt={`Cover for ${moodboard.name}`}
+                                            className="w-full h-64 object-cover object-center transition-transform duration-300 group-hover:scale-110"
+                                            onError={(e) => {
+                                                e.currentTarget.src = "https://placehold.co/600x600/1f2937/d1d5db?text=Image+Not+Found";
+                                                e.currentTarget.onerror = null;
+                                            }}
+                                        />
+                                    ) : (
+                                        <div
+                                            className="w-full h-64 flex items-center justify-center"
+                                            style={{ backgroundColor: moodboard.headerColor }}
+                                        >
+                                            <Palette size={40} className="text-white/60" />
+                                        </div>
+                                    )}
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent p-4 flex flex-col justify-end">
                                         <h2 className="text-xl font-semibold mb-1 truncate">
-                                            {gallery.name}
+                                            {moodboard.name}
                                         </h2>
-                                        <p className="text-sm text-gray-300 truncate">
-                                            by {gallery.author}
-                                        </p>
                                     </div>
                                 </motion.div>
                             </Link>
@@ -129,4 +147,4 @@ const GalleryListPage: React.FC = () => {
     );
 };
 
-export default GalleryListPage;
+export default MoodboardListPage;

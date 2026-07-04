@@ -11,11 +11,18 @@ API_KEY = os.getenv("apikey", "some-api-key")
 GALLERIES_ROOT_DIR = Path(os.getenv("GALLERIES_ROOT_DIR", "galleries"))
 GALLERIES_ROOT_DIR.mkdir(exist_ok=True)
 
+# Root directory for all moodboards and their content
+MOODBOARDS_ROOT_DIR = Path(
+    os.getenv("MOODBOARDS_ROOT_DIR", str(GALLERIES_ROOT_DIR / "moodboards"))
+)
+MOODBOARDS_ROOT_DIR.mkdir(parents=True, exist_ok=True)
+
 # Path to the static build of the React SPA
 REACT_BUILD_DIR = Path(os.getenv("REACT_BUILD_DIR", "frontend/dist"))
 
 print(f"REACT_BUILD_DIR is {REACT_BUILD_DIR}")
 print(f"GALLERIES_ROOT_DIR is {GALLERIES_ROOT_DIR}")
+print(f"MOODBOARDS_ROOT_DIR is {MOODBOARDS_ROOT_DIR}")
 print(f"API key is {API_KEY}")
 
 # Define the image sizes for automatic resizing (width, height)

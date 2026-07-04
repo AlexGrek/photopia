@@ -9,6 +9,10 @@ import EditGalleryPage from './pages/EditGalleryPage';
 const GalleryListPage = lazy(() => import('./pages/GalleryListPage'));
 const CreateGalleryPage = lazy(() => import('./pages/CreateGalleryPage'));
 const ImageUploaderPage = lazy(() => import('./pages/ImageUploaderPage'));
+const MoodboardListPage = lazy(() => import('./pages/MoodboardListPage'));
+const CreateMoodboardPage = lazy(() => import('./pages/CreateMoodboardPage'));
+const MoodboardPage = lazy(() => import('./pages/MoodboardPage'));
+const EditMoodboardPage = lazy(() => import('./pages/EditMoodboardPage'));
 
 const LoadingSpinner: React.FC = () => (
   <div className="bg-gray-950 min-h-screen flex items-center justify-center">
@@ -34,6 +38,10 @@ const RootApp: React.FC = () => {
                 <Route path="/edit/:galleryId" element={<EditGalleryPage />} />
                 <Route path="/create-gallery" element={<CreateGalleryPage />} />
                 <Route path="/upload-images" element={<ImageUploaderPage />} />
+                <Route path="/moodboards" element={<MoodboardListPage />} />
+                <Route path="/m/:moodboardId" element={<MoodboardPage />} />
+                <Route path="/create-moodboard" element={<CreateMoodboardPage />} />
+                <Route path="/edit-moodboard/:moodboardId" element={<EditMoodboardPage />} />
               </Routes>
             </AnimatePresence>
           </Suspense>
