@@ -1,0 +1,165 @@
+version: "3"
+
+vars:
+  RELEASE: photopia
+  NAMESPACE: photopia
+  CHART: ./helm-chart
+  BACKEND_DIR: ./backend
+  FRONTEND_DIR: ./frontend
+  IMAGE: grekodocker/photopia-bundle
+  BUILDX_LOCAL_CACHE: ./.buildx-cache
+  BUILDX_LOCAL_CACHE_NEW: ./.buildx-cache-new
+  BUILDX_BUILDER: multiarch-builder
+  GIT_HASH:
+    sh: git rev-parse --short HEAD
+  GIT_COMMITS:
+    sh: git rev-list --count HEAD
+
+tasks:
+  default:
+    desc: List available tasks
+    cmd: task --list
+
+  # ── Dev environment ──────────────────────────────────────────────────────────
+
+  dev:
+    desc: Run backend (uvicorn, :8000) and frontend Vite dev server together
+    deps: [dev:clear-ports]
+    cmd: |
+      #!/usr/bin/env bash
+      set -e
+      cleanup() {
+        echo ""
+        echo "==> Shutting down dev servers..."
+        kill "$BACKEND_PID" 2>/dev/null || true
+      }
+      trap cleanup EXIT
+
+      echo "==> Starting backend on :8000..."
+      (cd {{.BACKEND_DIR}} && \
+        REACT_BUILD_DIR=../frontend/dist \
+        GALLERIES_ROOT_DIR=galleries \
+        uvicorn main:app --reload --host 0.0.0.0 --port 8000) &
+      BACKEND_PID=$!
+
+      echo "==> Starting frontend dev server..."
+      (cd {{.FRONTEND_DIR}} && npm run dev)
+
+  dev:clear-ports:
+    desc: Kill any processes on the backend (:8000) or Vite (:5173) ports
+    cmd: |
+      #!/usr/bin/env bash
+      for port in 8000 5173; do
+        pids=$(lsof -ti :$port 2>/dev/null) || true
+        if [ -n "$pids" ]; then
+          echo "==> Releasing port $port (pid $pids)"
+          kill $pids 2>/dev/null || true
+        fi
+      done
+      exit 0
+
+  backend:run:
+    desc: Run the FastAPI backend (uvicorn, :8000)
+    dir: "{{.BACKEND_DIR}}"
+    env:
+      REACT_BUILD_DIR: ../frontend/dist
+      GALLERIES_ROOT_DIR: galleries
+    cmd: uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+  backend:install:
+    desc: Install backend Python dependencies
+    dir: "{{.BACKEND_DIR}}"
+    cmd: pip install -r requirements.txt
+
+  frontend:dev:
+    desc: Start the Vite dev server (http://localhost:5173)
+    dir: "{{.FRONTEND_DIR}}"
+    cmd: npm run dev
+
+  frontend:build:
+    desc: Build the frontend for production
+    dir: "{{.FRONTEND_DIR}}"
+    cmd: npm run build
+
+  frontend:install:
+    desc: Install frontend npm dependencies
+    dir: "{{.FRONTEND_DIR}}"
+    cmd: npm i
+
+  # ── E2E tests ────────────────────────────────────────────────────────────────
+
+  test:
+    desc: Run Cypress e2e tests (headless)
+    cmd: npx cypress run
+
+  test:open:
+    desc: Open the Cypress interactive test runner
+    cmd: npx cypress open
+
+  # ── Docker ───────────────────────────────────────────────────────────────────
+
+  docker:build:
+    desc: Build the amd64 bundle image (grekodocker/photopia-bundle) with persistent buildx cache
+    cmds:
+      - mkdir -p {{.BUILDX_LOCAL_CACHE}}
+      - rm -rf {{.BUILDX_LOCAL_CACHE_NEW}}
+      - docker buildx build --builder {{.BUILDX_BUILDER}} --platform linux/amd64 --load --cache-from=type=local,src={{.BUILDX_LOCAL_CACHE}} --cache-to=type=local,dest={{.BUILDX_LOCAL_CACHE_NEW}},mode=max -f Dockerfile -t {{.IMAGE}}:{{.GIT_HASH}} -t {{.IMAGE}}:latest .
+      - rm -rf {{.BUILDX_LOCAL_CACHE}} && mv {{.BUILDX_LOCAL_CACHE_NEW}} {{.BUILDX_LOCAL_CACHE}}
+
+  docker:release:
+    desc: Build + push the amd64 bundle image, tagged with the current git hash and latest
+    cmds:
+      - mkdir -p {{.BUILDX_LOCAL_CACHE}}
+      - rm -rf {{.BUILDX_LOCAL_CACHE_NEW}}
+      - docker buildx build --builder {{.BUILDX_BUILDER}} --platform linux/amd64 --push --cache-from=type=local,src={{.BUILDX_LOCAL_CACHE}} --cache-to=type=local,dest={{.BUILDX_LOCAL_CACHE_NEW}},mode=max -f Dockerfile -t {{.IMAGE}}:{{.GIT_HASH}} -t {{.IMAGE}}:latest .
+      - rm -rf {{.BUILDX_LOCAL_CACHE}} && mv {{.BUILDX_LOCAL_CACHE_NEW}} {{.BUILDX_LOCAL_CACHE}}
+
+  docker:k8s-secret:
+    desc: Create/refresh the dockerhub-creds pull secret in the cluster from local Docker credentials
+    cmd: |
+      kubectl create namespace {{.NAMESPACE}} --dry-run=client -o yaml | kubectl apply -f -
+      kubectl create secret generic dockerhub-creds \
+        --from-file=.dockerconfigjson=$HOME/.docker/config.json \
+        --type=kubernetes.io/dockerconfigjson \
+        --namespace={{.NAMESPACE}} \
+        --dry-run=client -o yaml | kubectl apply -f -
+
+  # ── Ship / Deploy ────────────────────────────────────────────────────────────
+
+  ship:
+    desc: Build + push the bundle image, then deploy it to the cluster (pinned to the current git hash)
+    cmds:
+      - task: docker:release
+      - task: deploy
+
+  deploy:
+    desc: Install or upgrade the release (idempotent), pinned to the current git hash
+    cmd: helm upgrade --install {{.RELEASE}} {{.CHART}} --namespace {{.NAMESPACE}} --create-namespace --set image.tag={{.GIT_HASH}}
+
+  uninstall:
+    desc: Uninstall the release (keeps the namespace)
+    cmd: helm uninstall {{.RELEASE}} --namespace {{.NAMESPACE}}
+
+  lint:
+    desc: Lint the Helm chart
+    cmd: helm lint {{.CHART}}
+
+  template:
+    desc: Render chart templates locally without deploying
+    cmd: helm template {{.RELEASE}} {{.CHART}} --namespace {{.NAMESPACE}} --set image.tag={{.GIT_HASH}}
+
+  status:
+    desc: Show release status
+    cmd: helm status {{.RELEASE}} --namespace {{.NAMESPACE}}
+
+  history:
+    desc: Show release history
+    cmd: helm history {{.RELEASE}} --namespace {{.NAMESPACE}}
+
+  rollback:
+    desc: Rollback to the previous revision
+    cmd: helm rollback {{.RELEASE}} --namespace {{.NAMESPACE}}
+
+  logs:
+    desc: Tail logs from the running pods
+    cmd: kubectl logs -f -l app.kubernetes.io/instance={{.RELEASE}} --namespace {{.NAMESPACE}} --all-containers --max-log-requests 10
