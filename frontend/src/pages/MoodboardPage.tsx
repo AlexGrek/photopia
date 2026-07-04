@@ -63,15 +63,15 @@ const MoodboardPage: React.FC = () => {
             >
                 <div className="absolute inset-0 bg-black/40 backdrop-blur-md flex flex-col justify-end p-6 md:p-10">
                     <div className='absolute fadeInDelayed' style={{ transform: "translate(-1em, -9.5em)" }}><Logo /></div>
-                    <div className="flex items-center space-x-4 mb-4">
+                    <div className="flex flex-wrap items-center gap-3 mb-4">
                         <button
                             id="back-btn"
                             onClick={() => navigate('/moodboards')}
-                            className="bg-gray-800/50 backdrop-blur-sm p-2 rounded-full hover:bg-gray-700/50 transition-colors"
+                            className="bg-gray-800/50 backdrop-blur-sm p-2 rounded-full hover:bg-gray-700/50 transition-colors flex-shrink-0"
                         >
                             <ChevronLeft size={24} />
                         </button>
-                        <h1 className="text-4xl font-semibold">
+                        <h1 className="text-2xl sm:text-4xl font-semibold min-w-0 break-words">
                             {moodboard.name}
                         </h1>
                         {isAdmin && (
