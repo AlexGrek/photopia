@@ -7,6 +7,7 @@ import Logo from '../components/Logo';
 import MoodboardViewer from '../components/MoodboardViewer';
 import { useNotification } from '../contexts/NotificationContext';
 import { localStorageKey } from '../components/ApiKeyForm';
+import Footer from "../components/Footer";
 
 const MoodboardPage: React.FC = () => {
     const { moodboardId } = useParams<{ moodboardId: string }>();
@@ -92,10 +93,7 @@ const MoodboardPage: React.FC = () => {
                 {moodboard.sections.length > 0 && <MoodboardViewer moodboard={moodboard} />}
             </main>
 
-            {/* Footer */}
-            <footer className="py-4 text-center text-gray-500 text-sm mt-10">
-                <p>by Unknown Desires, 2025</p>
-            </footer>
+            <Footer />
         </div>
     );
 };

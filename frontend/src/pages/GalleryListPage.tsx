@@ -8,6 +8,7 @@ import Modal from '../components/Modal';
 import ApiKeyForm from '../components/ApiKeyForm';
 import Logo from '../components/Logo';
 import PageTabs from '../components/PageTabs';
+import Footer from "../components/Footer";
 
 const GalleryListPage: React.FC = () => {
     const [galleries, setGalleries] = useState<GalleryThumbnail[]>([]);
@@ -121,10 +122,7 @@ const GalleryListPage: React.FC = () => {
                 )}
             </main>
 
-            {/* Footer */}
-            <footer className="py-4 text-center text-gray-500 text-sm mt-10">
-                <p>by Unknown Desires, 2025</p>
-            </footer>
+            <Footer />
         </div>
     );
 };

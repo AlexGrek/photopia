@@ -9,6 +9,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import { localStorageKey } from '../components/ApiKeyForm';
 import { GalleryViewer } from '../components/GalleryViewer';
 import ConfirmationModal from '../components/ConfirmationModal';
+import Footer from "../components/Footer";
 
 const EditGalleryPage: React.FC = () => {
     const { galleryId } = useParams<{ galleryId: string }>();
@@ -308,10 +309,7 @@ const EditGalleryPage: React.FC = () => {
                     onAuthorChange={handleRenameGalleryAuthor} />}
             </main>
 
-            {/* Footer */}
-            <footer className="py-4 text-center text-gray-500 text-sm mt-10">
-                <p>by Unknown Desires, 2025</p>
-            </footer>
+            <Footer />
         </div>
     );
 };

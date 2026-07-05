@@ -26,6 +26,7 @@ import Logo from "../components/Logo";
 import { useNotification } from "../contexts/NotificationContext";
 import { localStorageKey } from "../components/ApiKeyForm";
 import ConfirmationModal from "../components/ConfirmationModal";
+import Footer from "../components/Footer";
 
 const IMAGE_PLACEHOLDER =
   "https://placehold.co/600x600/1f2937/d1d5db?text=Image+Not+Found";
@@ -574,10 +575,7 @@ const EditMoodboardPage: React.FC = () => {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="py-4 text-center text-gray-500 text-sm mt-10">
-        <p>by Unknown Desires, 2025</p>
-      </footer>
+            <Footer />
     </div>
   );
 };

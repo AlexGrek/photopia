@@ -8,6 +8,7 @@ import GalleryBrowser from '../components/GalleryBrowser';
 import Logo from '../components/Logo';
 import { useNotification } from '../contexts/NotificationContext';
 import { localStorageKey } from '../components/ApiKeyForm';
+import Footer from "../components/Footer";
 
 const GalleryPage: React.FC = () => {
     const { galleryId } = useParams<{ galleryId: string }>();
@@ -169,10 +170,7 @@ const GalleryPage: React.FC = () => {
                 {gallery && gallery.images.length > 0 && <GalleryBrowser images={gallery.images} />}
             </main>
 
-            {/* Footer */}
-            <footer className="py-4 text-center text-gray-500 text-sm mt-10">
-                <p>by Unknown Desires, 2025</p>
-            </footer>
+            <Footer />
         </div>
     );
 };
