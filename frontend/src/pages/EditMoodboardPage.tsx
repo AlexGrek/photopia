@@ -356,10 +356,7 @@ const EditMoodboardPage: React.FC = () => {
         style={{ backgroundColor: moodboard.headerColor }}
       >
         <div className="absolute inset-0 bg-black/40 backdrop-blur-md flex flex-col justify-end p-6 md:p-10">
-          <div
-            className="absolute"
-            style={{ transform: "translate(-1em, -9.5em)" }}
-          >
+          <div className="absolute top-6 left-6 md:top-8 md:left-10">
             <Logo />
           </div>
           <div className="flex flex-wrap items-center gap-4 mb-4">
