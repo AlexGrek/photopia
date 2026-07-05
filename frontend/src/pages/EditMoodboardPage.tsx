@@ -12,9 +12,14 @@ import {
   Type,
   Images,
   X,
+  Eye,
+  Pencil,
+  GripVertical,
+  ListOrdered,
+  Check,
 } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, Reorder } from "framer-motion";
 import type {
   Moodboard,
   MoodboardImage,
@@ -27,6 +32,7 @@ import { useNotification } from "../contexts/NotificationContext";
 import { localStorageKey } from "../components/ApiKeyForm";
 import ConfirmationModal from "../components/ConfirmationModal";
 import Footer from "../components/Footer";
+import Markdown from "../components/Markdown";
 
 const IMAGE_PLACEHOLDER =
   "https://placehold.co/600x600/1f2937/d1d5db?text=Image+Not+Found";
@@ -48,6 +54,8 @@ const EditMoodboardPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [uploadingSection, setUploadingSection] = useState<number | null>(null);
+  const [previewSections, setPreviewSections] = useState<Record<number, boolean>>({});
+  const [reorderingSections, setReorderingSections] = useState<Record<number, boolean>>({});
 
   const fileInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
 
@@ -125,6 +133,16 @@ const EditMoodboardPage: React.FC = () => {
     updateSections(sections);
   };
 
+  const handleReorderImages = (
+    sectionIndex: number,
+    images: MoodboardImage[],
+  ) => {
+    if (!moodboard) return;
+    const sections = [...moodboard.sections];
+    sections[sectionIndex] = { ...sections[sectionIndex], images };
+    updateSections(sections);
+  };
+
   const handleImageDescriptionChange = (
     sectionIndex: number,
     imageId: string,
@@ -140,13 +158,14 @@ const EditMoodboardPage: React.FC = () => {
     updateSections(sections);
   };
 
-  const handleRemoveImage = async (
+  const handleRemoveImage = (
     sectionIndex: number,
     image: MoodboardImage,
   ) => {
     if (!moodboard) return;
 
-    // Optimistically update local state.
+    // Remove from local state only. The image file is garbage-collected on the
+    // server when the moodboard is saved (see updateMoodboard).
     const sections = [...moodboard.sections];
     const section = sections[sectionIndex];
     sections[sectionIndex] = {
@@ -154,29 +173,6 @@ const EditMoodboardPage: React.FC = () => {
       images: (section.images || []).filter((img) => img.id !== image.id),
     };
     updateSections(sections);
-
-    try {
-      const response = await fetch(
-        `/api/v1/moodboardImage?moodboard_id=${moodboardId}&url=${encodeURIComponent(image.url)}`,
-        {
-          method: "DELETE",
-          headers: {
-            "X-Api-Key": String(localStorage.getItem(localStorageKey)),
-          },
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      notify("Image removed.");
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        notify(`Failed to remove image: ${err.message}`, "error");
-      } else {
-        notify("An unknown error occurred while removing the image.", "error");
-      }
-    }
   };
 
   const handleUploadImages = async (
@@ -324,7 +320,7 @@ const EditMoodboardPage: React.FC = () => {
 
   if (!moodboard) {
     return (
-      <div className="w-full min-h-screen text-white">
+      <div className="w-full min-h-screen text-white font-moodboard">
         {loading && (
           <p className="animate-pulse">
             <Loader2 />
@@ -341,7 +337,7 @@ const EditMoodboardPage: React.FC = () => {
   }
 
   return (
-    <div className="bg-gray-950 text-white min-h-screen font-sans">
+    <div className="bg-gray-950 text-white min-h-screen font-moodboard">
       <ConfirmationModal
         isVisible={deleteOpen}
         onConfirm={handleDeleteMoodboard}
@@ -354,7 +350,7 @@ const EditMoodboardPage: React.FC = () => {
 
       <motion.header
         layoutId={`moodboard-card-${moodboard.id}`}
-        className="relative w-full h-64 overflow-hidden"
+        className="relative w-full h-80 md:h-64 overflow-hidden"
         style={{ backgroundColor: moodboard.headerColor }}
       >
         <div className="absolute inset-0 bg-black/40 backdrop-blur-md flex flex-col justify-end p-6 md:p-10">
@@ -458,13 +454,52 @@ const EditMoodboardPage: React.FC = () => {
             </div>
 
             {section.type === "text" && (
-              <textarea
-                value={section.text || ""}
-                onChange={(e) => handleSectionTextChange(index, e.target.value)}
-                rows={6}
-                placeholder="Write something..."
-                className="w-full bg-gray-950 text-gray-100 rounded-lg p-4 border border-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-600 resize-y"
-              />
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-500">
+                    Supports Markdown
+                  </span>
+                  <button
+                    onClick={() =>
+                      setPreviewSections((prev) => ({
+                        ...prev,
+                        [index]: !prev[index],
+                      }))
+                    }
+                    className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-200 transition-colors"
+                    title={previewSections[index] ? "Edit" : "Preview"}
+                  >
+                    {previewSections[index] ? (
+                      <>
+                        <Pencil size={14} /> Edit
+                      </>
+                    ) : (
+                      <>
+                        <Eye size={14} /> Preview
+                      </>
+                    )}
+                  </button>
+                </div>
+                {previewSections[index] ? (
+                  <div className="w-full min-h-[9rem] bg-gray-950 rounded-lg p-4 border border-gray-800">
+                    {section.text ? (
+                      <Markdown>{section.text}</Markdown>
+                    ) : (
+                      <p className="text-gray-600 italic">Nothing to preview</p>
+                    )}
+                  </div>
+                ) : (
+                  <textarea
+                    value={section.text || ""}
+                    onChange={(e) =>
+                      handleSectionTextChange(index, e.target.value)
+                    }
+                    rows={6}
+                    placeholder="Write something... (Markdown supported)"
+                    className="w-full bg-gray-950 text-gray-100 rounded-lg p-4 border border-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-600 resize-y font-mono text-sm"
+                  />
+                )}
+              </div>
             )}
 
             {section.type === "images" && (
@@ -488,10 +523,43 @@ const EditMoodboardPage: React.FC = () => {
                     ))}
                   </select>
 
+                  {(section.images || []).length > 1 && (
+                    <button
+                      onClick={() =>
+                        setReorderingSections((prev) => ({
+                          ...prev,
+                          [index]: !prev[index],
+                        }))
+                      }
+                      className={`ml-auto flex items-center gap-2 text-sm py-1.5 px-3 rounded-md transition-colors ${
+                        reorderingSections[index]
+                          ? "bg-emerald-700 hover:bg-emerald-600"
+                          : "bg-gray-800 hover:bg-gray-700"
+                      }`}
+                      title={
+                        reorderingSections[index]
+                          ? "Finish reordering"
+                          : "Reorder images"
+                      }
+                    >
+                      {reorderingSections[index] ? (
+                        <>
+                          <Check size={16} /> Done
+                        </>
+                      ) : (
+                        <>
+                          <ListOrdered size={16} /> Reorder
+                        </>
+                      )}
+                    </button>
+                  )}
+
                   <button
                     onClick={() => fileInputRefs.current[index]?.click()}
                     disabled={uploadingSection === index}
-                    className="ml-auto flex items-center gap-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 text-sm py-1.5 px-3 rounded-md transition-colors"
+                    className={`flex items-center gap-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 text-sm py-1.5 px-3 rounded-md transition-colors ${
+                      (section.images || []).length > 1 ? "" : "ml-auto"
+                    }`}
                   >
                     {uploadingSection === index ? (
                       <Loader2 size={16} className="animate-spin" />
@@ -515,13 +583,23 @@ const EditMoodboardPage: React.FC = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {(section.images || []).map((image) => (
-                    <div
-                      key={image.id}
-                      className="relative bg-gray-950 rounded-lg border border-gray-800 p-2 flex flex-col gap-2"
-                    >
-                      <div className="relative">
+                {reorderingSections[index] ? (
+                  <Reorder.Group
+                    axis="y"
+                    values={section.images || []}
+                    onReorder={(images) => handleReorderImages(index, images)}
+                    className="flex flex-col gap-2"
+                  >
+                    {(section.images || []).map((image) => (
+                      <Reorder.Item
+                        key={image.id}
+                        value={image}
+                        className="flex items-center gap-3 bg-gray-950 rounded-lg border border-gray-800 p-2 cursor-grab active:cursor-grabbing select-none"
+                      >
+                        <GripVertical
+                          size={18}
+                          className="text-gray-500 flex-shrink-0"
+                        />
                         <img
                           src={image.url}
                           alt={image.description || ""}
@@ -529,32 +607,60 @@ const EditMoodboardPage: React.FC = () => {
                             e.currentTarget.src = IMAGE_PLACEHOLDER;
                             e.currentTarget.onerror = null;
                           }}
-                          className="w-full h-32 object-cover rounded-md"
+                          className="w-16 h-16 object-cover rounded-md flex-shrink-0 pointer-events-none"
                         />
-                        <button
-                          onClick={() => handleRemoveImage(index, image)}
-                          className="absolute top-1 right-1 bg-black/60 hover:bg-red-700 rounded-full p-1 transition-colors"
-                          title="Remove image"
-                        >
-                          <X size={14} />
-                        </button>
+                        <span className="text-sm text-gray-300 truncate min-w-0 flex-1">
+                          {image.description || (
+                            <span className="text-gray-600 italic">
+                              No description
+                            </span>
+                          )}
+                        </span>
+                      </Reorder.Item>
+                    ))}
+                  </Reorder.Group>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {(section.images || []).map((image) => (
+                      <div
+                        key={image.id}
+                        className="relative bg-gray-950 rounded-lg border border-gray-800 p-2 flex flex-col gap-2"
+                      >
+                        <div className="relative">
+                          <img
+                            src={image.url}
+                            alt={image.description || ""}
+                            onError={(e) => {
+                              e.currentTarget.src = IMAGE_PLACEHOLDER;
+                              e.currentTarget.onerror = null;
+                            }}
+                            className="w-full h-32 object-cover rounded-md"
+                          />
+                          <button
+                            onClick={() => handleRemoveImage(index, image)}
+                            className="absolute top-1 right-1 bg-black/60 hover:bg-red-700 rounded-full p-1 transition-colors"
+                            title="Remove image"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          value={image.description || ""}
+                          onChange={(e) =>
+                            handleImageDescriptionChange(
+                              index,
+                              image.id,
+                              e.target.value,
+                            )
+                          }
+                          placeholder="Description"
+                          className="w-full bg-gray-900 text-gray-100 text-xs rounded-md px-2 py-1 border border-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-600"
+                        />
                       </div>
-                      <input
-                        type="text"
-                        value={image.description || ""}
-                        onChange={(e) =>
-                          handleImageDescriptionChange(
-                            index,
-                            image.id,
-                            e.target.value,
-                          )
-                        }
-                        placeholder="Description"
-                        className="w-full bg-gray-900 text-gray-100 text-xs rounded-md px-2 py-1 border border-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-600"
-                      />
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

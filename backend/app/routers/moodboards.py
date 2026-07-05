@@ -110,6 +110,36 @@ async def create_moodboard(data: MoodboardData):
     return new_moodboard
 
 
+def _prune_unused_moodboard_images(moodboard_id: str, sections) -> None:
+    """
+    Deletes physical files in the moodboard's `attached_photos` directory that
+    are no longer referenced by any image in `sections`. Called after a full
+    save so that images removed from lists (or lists removed entirely) don't
+    leave orphaned files behind.
+    """
+    attached_dir = MOODBOARDS_ROOT_DIR / moodboard_id / "attached_photos"
+    if not attached_dir.is_dir():
+        return
+
+    # Resolve every still-referenced image URL to an absolute file path.
+    referenced_paths = set()
+    for section in sections:
+        if getattr(section, "type", None) == "images" and section.images:
+            for img in section.images:
+                if img.url:
+                    referenced_paths.add(
+                        (MOODBOARDS_ROOT_DIR / remove_leading_parts(img.url)).resolve()
+                    )
+
+    for file_path in attached_dir.iterdir():
+        if file_path.is_file() and file_path.resolve() not in referenced_paths:
+            try:
+                os.remove(file_path)
+            except OSError:
+                # Best-effort cleanup; don't fail the save on a stray file.
+                pass
+
+
 @router.post(
     "/updateMoodboard",
     response_model=Moodboard,
@@ -131,6 +161,9 @@ async def update_moodboard(moodboard_id: str, data: Moodboard):
 
     # Update moodboard metadata in file
     save_moodboard_metadata(moodboard)
+
+    # Garbage-collect image files no longer referenced by any section.
+    _prune_unused_moodboard_images(moodboard_id, moodboard.sections)
 
     return moodboard
 

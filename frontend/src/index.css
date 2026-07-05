@@ -1,1 +1,7 @@
 @import "tailwindcss";
+@import "@fontsource-variable/manrope";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-moodboard: "Manrope Variable", ui-sans-serif, system-ui, sans-serif;
+}

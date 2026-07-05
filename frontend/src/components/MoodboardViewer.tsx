@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import type { Moodboard, MoodboardImage, MoodboardSection } from '../Models';
+import Markdown from './Markdown';
 
 const IMAGE_PLACEHOLDER = "https://placehold.co/600x600/1f2937/d1d5db?text=Image+Not+Found";
 
@@ -173,10 +174,10 @@ const MoodboardViewer: React.FC<MoodboardViewerProps> = ({ moodboard }) => {
         <div className="flex flex-col gap-10">
             {moodboard.sections.map((section, index) => (
                 <div key={index}>
-                    {section.type === 'text' && (
-                        <div className="prose prose-invert max-w-none text-gray-200 text-lg leading-relaxed whitespace-pre-wrap">
+                    {section.type === 'text' && section.text && (
+                        <Markdown className="prose-lg text-gray-200 leading-relaxed">
                             {section.text}
-                        </div>
+                        </Markdown>
                     )}
                     {section.type === 'images' && (
                         <MoodboardImagesSection section={section} onImageClick={setExpandedImage} />

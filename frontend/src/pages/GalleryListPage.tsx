@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { LoaderCircle, SquarePlus } from 'lucide-react';
-import { Menu } from '@headlessui/react';
+import { LoaderCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { GalleryThumbnail } from '../Models';
 import Modal from '../components/Modal';
 import ApiKeyForm from '../components/ApiKeyForm';
-import Logo from '../components/Logo';
-import PageTabs from '../components/PageTabs';
+import ListPageHeader from '../components/ListPageHeader';
 import Footer from "../components/Footer";
 
 const GalleryListPage: React.FC = () => {
@@ -44,22 +42,7 @@ const GalleryListPage: React.FC = () => {
     return (
         <div className="bg-gray-950 text-white min-h-screen font-sans">
             {/* Top Navigation Bar */}
-            <header className="flex justify-between items-center p-6 shadow-md sticky top-0 z-10 backdrop-blur-2xl">
-                <div className="flex items-baseline gap-6">
-                    <Logo/>
-                    <PageTabs />
-                </div>
-                <Menu as="div" className="relative">
-                    <button
-                        id="login-btn"
-                        onClick={() => setIsLoginModalOpen(true)}
-                        className="bg-gray-900 hover:bg-gray-700 cursor-pointer text-white font-medium py-2 px-4 rounded-2xl transition-colors duration-200 flex items-center gap-2"
-                    >
-                        <SquarePlus size={20} />
-                        <span className="hidden sm:inline opacity-55">Add</span>
-                    </button>
-                </Menu>
-            </header>
+            <ListPageHeader onAddClick={() => setIsLoginModalOpen(true)} />
 
             {/* Main Content Area */}
             <main className="container mx-auto p-6 pt-10 flex-grow fadeIn">

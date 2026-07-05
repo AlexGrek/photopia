@@ -62,7 +62,7 @@ const CreateMoodboardPage: React.FC = () => {
     };
 
     return (
-        <div className='fadeIn'>
+        <div className='fadeIn font-moodboard'>
             <div className='absolute' style={{transform: "translate(1.5em, 1.5em)"}}><Logo /></div>
         <div className="flex items-center justify-center min-h-screen bg-neutral-900 text-neutral-200 p-4">
             <div className="w-full max-w-lg p-8 space-y-8 bg-neutral-800 rounded-xl shadow-2xl border border-neutral-700">

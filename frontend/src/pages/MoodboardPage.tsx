@@ -49,20 +49,41 @@ const MoodboardPage: React.FC = () => {
     }, [moodboardId, notify]);
 
     if (!moodboard) {
-        return (<div className='w-full min-h-screen text-white'>
+        return (<div className='w-full min-h-screen text-white font-moodboard'>
             {loading && <p className='animate-pulse'><Loader2 /></p>}
             {error && <p className='animate-pulse'><Sigma />{error}</p>}
         </div>);
     }
 
+    const headerColor = moodboard.headerColor || '#334155';
+    // A "liquid glass" gradient derived from the single header color: light and
+    // dark blobs plus a diagonal sheen, all mixed off the base color.
+    const liquidGlass: React.CSSProperties = {
+        backgroundColor: headerColor,
+        backgroundImage: [
+            `radial-gradient(90% 120% at 12% 18%, color-mix(in srgb, ${headerColor} 45%, white) 0%, transparent 50%)`,
+            `radial-gradient(80% 100% at 88% 12%, color-mix(in srgb, ${headerColor} 25%, white) 0%, transparent 45%)`,
+            `radial-gradient(110% 120% at 80% 95%, color-mix(in srgb, ${headerColor} 55%, black) 0%, transparent 55%)`,
+            `linear-gradient(135deg, color-mix(in srgb, ${headerColor} 65%, white) 0%, ${headerColor} 45%, color-mix(in srgb, ${headerColor} 60%, black) 100%)`,
+        ].join(', '),
+    };
+
     return (
-        <div className="bg-gray-950 text-white min-h-screen font-sans">
+        <div className="bg-gray-950 text-white min-h-screen font-moodboard">
             <motion.header
                 layoutId={`moodboard-card-${moodboard.id}`}
-                className="relative w-full h-64 overflow-hidden"
-                style={{ backgroundColor: moodboard.headerColor }}
+                className="relative w-full h-80 md:h-64 overflow-hidden"
+                style={liquidGlass}
             >
-                <div className="absolute inset-0 bg-black/40 backdrop-blur-md flex flex-col justify-end p-6 md:p-10">
+                {/* Glossy diagonal sheen for the glass highlight */}
+                <div
+                    className="pointer-events-none absolute inset-0"
+                    style={{
+                        background:
+                            'linear-gradient(115deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 28%, rgba(255,255,255,0) 72%, rgba(255,255,255,0.10) 100%)',
+                    }}
+                />
+                <div className="absolute inset-0 bg-black/25 backdrop-blur-xl ring-1 ring-inset ring-white/10 flex flex-col justify-end p-6 md:p-10">
                     <div className='absolute top-6 left-6 md:top-8 md:left-10 fadeInDelayed'><Logo /></div>
                     <div className="flex flex-wrap items-center gap-3 mb-4">
                         <button
