@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
@@ -10,6 +10,89 @@ const IMAGE_PLACEHOLDER = "https://placehold.co/600x600/1f2937/d1d5db?text=Image
 const onImgError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.src = IMAGE_PLACEHOLDER;
     e.currentTarget.onerror = null;
+};
+
+interface HorizontalScrollerProps {
+    images: MoodboardImage[];
+    onImageClick: (image: MoodboardImage) => void;
+}
+
+/**
+ * Horizontally scrollable strip of images. When it first becomes fully visible
+ * on screen it performs a small "nudge" (scrolls a bit to the right and back)
+ * to hint to the user that there's more content to scroll to.
+ */
+const HorizontalScroller: React.FC<HorizontalScrollerProps> = ({ images, onImageClick }) => {
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const hasHinted = useRef(false);
+
+    useEffect(() => {
+        const el = scrollRef.current;
+        if (!el) return;
+
+        // Respect users who prefer reduced motion.
+        const prefersReducedMotion = window.matchMedia(
+            '(prefers-reduced-motion: reduce)',
+        ).matches;
+        if (prefersReducedMotion) return;
+
+        const nudge = () => {
+            // Only hint when there's actually something to scroll to.
+            if (el.scrollWidth <= el.clientWidth + 8) return;
+            const distance = Math.min(64, el.scrollWidth - el.clientWidth);
+            el.scrollTo({ left: distance, behavior: 'smooth' });
+            window.setTimeout(() => {
+                el.scrollTo({ left: 0, behavior: 'smooth' });
+            }, 550);
+        };
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                for (const entry of entries) {
+                    if (
+                        entry.isIntersecting &&
+                        entry.intersectionRatio >= 0.99 &&
+                        !hasHinted.current
+                    ) {
+                        hasHinted.current = true;
+                        // Small delay so the hint reads as intentional after the
+                        // strip has settled into view.
+                        window.setTimeout(nudge, 400);
+                        observer.disconnect();
+                    }
+                }
+            },
+            { threshold: [0.99] },
+        );
+
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, [images.length]);
+
+    return (
+        // Full-bleed: break out of the padded/centered page container so the
+        // strip spans the whole viewport and is only limited by the screen edge.
+        // Inner padding keeps the first/last items aligned with page content.
+        <div
+            ref={scrollRef}
+            className="relative left-1/2 -translate-x-1/2 w-screen max-w-[100vw] flex gap-4 overflow-x-auto pb-4 px-6"
+        >
+            {images.map((image) => (
+                <div key={image.id} className="flex-shrink-0 w-56 sm:w-72 flex flex-col gap-2">
+                    <img
+                        src={image.url}
+                        alt={image.description || ''}
+                        onClick={() => onImageClick(image)}
+                        onError={onImgError}
+                        className="w-56 h-56 sm:w-72 sm:h-72 object-cover rounded-lg cursor-pointer"
+                    />
+                    {image.description && (
+                        <p className="text-gray-400 text-sm truncate">{image.description}</p>
+                    )}
+                </div>
+            ))}
+        </div>
+    );
 };
 
 interface MoodboardImagesSectionProps {
@@ -45,24 +128,7 @@ const MoodboardImagesSection: React.FC<MoodboardImagesSectionProps> = ({ section
     }
 
     if (view === 'horizontalScroller') {
-        return (
-            <div className="flex gap-4 overflow-x-auto pb-4 -mx-1 px-1">
-                {images.map((image) => (
-                    <div key={image.id} className="flex-shrink-0 w-56 sm:w-72 flex flex-col gap-2">
-                        <img
-                            src={image.url}
-                            alt={image.description || ''}
-                            onClick={() => onImageClick(image)}
-                            onError={onImgError}
-                            className="w-56 h-56 sm:w-72 sm:h-72 object-cover rounded-lg cursor-pointer"
-                        />
-                        {image.description && (
-                            <p className="text-gray-400 text-sm truncate">{image.description}</p>
-                        )}
-                    </div>
-                ))}
-            </div>
-        );
+        return <HorizontalScroller images={images} onImageClick={onImageClick} />;
     }
 
     if (view === 'masonry') {

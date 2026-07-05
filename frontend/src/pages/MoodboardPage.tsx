@@ -72,7 +72,7 @@ const MoodboardPage: React.FC = () => {
     };
 
     return (
-        <div className="bg-gray-950 text-white min-h-screen font-moodboard">
+        <div className="bg-gray-950 text-white min-h-screen font-moodboard overflow-x-hidden">
             <motion.header
                 layoutId={`moodboard-card-${moodboard.id}`}
                 className="relative w-full h-80 md:h-64 overflow-hidden"
