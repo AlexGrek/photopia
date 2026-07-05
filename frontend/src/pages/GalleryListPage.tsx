@@ -45,7 +45,10 @@ const GalleryListPage: React.FC = () => {
         <div className="bg-gray-950 text-white min-h-screen font-sans">
             {/* Top Navigation Bar */}
             <header className="flex justify-between items-center p-6 shadow-md sticky top-0 z-10 backdrop-blur-2xl">
-                <Logo/>
+                <div className="flex items-baseline gap-6">
+                    <Logo/>
+                    <PageTabs />
+                </div>
                 <Menu as="div" className="relative">
                     <button
                         id="login-btn"
@@ -60,7 +63,6 @@ const GalleryListPage: React.FC = () => {
 
             {/* Main Content Area */}
             <main className="container mx-auto p-6 pt-10 flex-grow fadeIn">
-                <PageTabs />
                 <h1 className="text-3xl font-light mx-auto w-full mb-8 text-center sm:text-left">
                     Galleries
                 </h1>

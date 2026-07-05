@@ -65,7 +65,7 @@ async def create_moodboard(data: MoodboardData):
     # use current keys to detect collisions
     existing_ids = set(moodboards_db.keys())
     moodboard_id = generate_readable_id(
-        data.name or "moodboard", existing_ids, MOODBOARDS_ROOT_DIR, max_len=30
+        data.name or "moodboard", existing_ids, MOODBOARDS_ROOT_DIR, max_len=40
     )
     moodboard_path = MOODBOARDS_ROOT_DIR / moodboard_id
 
@@ -79,7 +79,7 @@ async def create_moodboard(data: MoodboardData):
             f"{data.name}-{uuid.uuid4().hex[:4]}",
             existing_ids,
             MOODBOARDS_ROOT_DIR,
-            max_len=30,
+            max_len=40,
         )
         moodboard_path = MOODBOARDS_ROOT_DIR / moodboard_id
         try:
