@@ -17,6 +17,7 @@ import {
   GripVertical,
   ListOrdered,
   Check,
+  Shuffle,
 } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, Reorder } from "framer-motion";
@@ -144,6 +145,17 @@ const EditMoodboardPage: React.FC = () => {
     const sections = [...moodboard.sections];
     sections[sectionIndex] = { ...sections[sectionIndex], images };
     updateSections(sections);
+  };
+
+  const handleShuffleImages = (sectionIndex: number) => {
+    if (!moodboard) return;
+    const images = [...(moodboard.sections[sectionIndex].images || [])];
+    // Fisher-Yates shuffle for an unbiased random order.
+    for (let i = images.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [images[i], images[j]] = [images[j], images[i]];
+    }
+    handleReorderImages(sectionIndex, images);
   };
 
   const handleImageDescriptionChange = (
@@ -589,6 +601,19 @@ const EditMoodboardPage: React.FC = () => {
                 </div>
 
                 {reorderingSections[index] ? (
+                  <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleShuffleImages(index)}
+                      className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-sm py-1.5 px-3 rounded-md transition-colors"
+                      title="Shuffle images randomly"
+                    >
+                      <Shuffle size={16} /> Shuffle
+                    </button>
+                    <span className="text-xs text-gray-500">
+                      Drag to reorder, or shuffle for a random order.
+                    </span>
+                  </div>
                   <Reorder.Group
                     axis="y"
                     values={section.images || []}
@@ -624,6 +649,7 @@ const EditMoodboardPage: React.FC = () => {
                       </Reorder.Item>
                     ))}
                   </Reorder.Group>
+                  </div>
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                     {(section.images || []).map((image) => (
