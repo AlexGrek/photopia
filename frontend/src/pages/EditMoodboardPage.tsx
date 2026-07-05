@@ -372,7 +372,7 @@ const EditMoodboardPage: React.FC = () => {
             </button>
             <input
               id="moodboard-name-inp"
-              className="text-4xl font-semibold bg-transparent border-b border-transparent hover:border-white/30 focus:border-white/60 focus:outline-none"
+              className="text-2xl sm:text-4xl font-semibold bg-transparent border-b border-transparent hover:border-white/30 focus:border-white/60 focus:outline-none min-w-0 flex-1"
               value={moodboard.name}
               onChange={(e) =>
                 setMoodboard({ ...moodboard, name: e.target.value })
@@ -470,7 +470,7 @@ const EditMoodboardPage: React.FC = () => {
 
             {section.type === "images" && (
               <div className="space-y-4">
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   <label className="text-sm text-gray-400">View:</label>
                   <select
                     value={section.view || "grid"}
@@ -561,7 +561,7 @@ const EditMoodboardPage: React.FC = () => {
           </div>
         ))}
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => handleAddSection("text")}
             className="flex items-center gap-2 bg-gray-900 hover:bg-gray-800 border border-gray-800 py-2 px-4 rounded-lg transition-colors"

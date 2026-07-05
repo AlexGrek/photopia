@@ -43,15 +43,15 @@ const MoodboardImagesSection: React.FC<MoodboardImagesSectionProps> = ({ section
 
     if (view === 'horizontalScroller') {
         return (
-            <div className="flex gap-4 overflow-x-auto pb-4">
+            <div className="flex gap-4 overflow-x-auto pb-4 -mx-1 px-1">
                 {images.map((image) => (
-                    <div key={image.id} className="flex-shrink-0 w-72 flex flex-col gap-2">
+                    <div key={image.id} className="flex-shrink-0 w-56 sm:w-72 flex flex-col gap-2">
                         <img
                             src={image.url}
                             alt={image.description || ''}
                             onClick={() => onImageClick(image)}
                             onError={onImgError}
-                            className="w-72 h-72 object-cover rounded-lg cursor-pointer"
+                            className="w-56 h-56 sm:w-72 sm:h-72 object-cover rounded-lg cursor-pointer"
                         />
                         {image.description && (
                             <p className="text-gray-400 text-sm truncate">{image.description}</p>
