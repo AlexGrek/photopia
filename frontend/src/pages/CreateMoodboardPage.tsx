@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { localStorageKey } from '../components/ApiKeyForm';
 import { useNavigate } from 'react-router';
 import Logo from '../components/Logo';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 // Define the shape of the moodboard data.
 interface MoodboardData {
@@ -12,6 +13,8 @@ interface MoodboardData {
 const DEFAULT_HEADER_COLOR = '#111827';
 
 const CreateMoodboardPage: React.FC = () => {
+    useDocumentTitle('New moodboard');
+
     const [moodboard, setMoodboard] = useState<MoodboardData>({
         name: '',
         headerColor: DEFAULT_HEADER_COLOR,

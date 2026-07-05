@@ -9,6 +9,7 @@ import Logo from '../components/Logo';
 import { useNotification } from '../contexts/NotificationContext';
 import { localStorageKey } from '../components/ApiKeyForm';
 import Footer from "../components/Footer";
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 const GalleryPage: React.FC = () => {
     const { galleryId } = useParams<{ galleryId: string }>();
@@ -20,6 +21,8 @@ const GalleryPage: React.FC = () => {
 
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+
+    useDocumentTitle(gallery?.name || state?.gallery?.name);
 
     const isAdmin = localStorage.getItem(localStorageKey) != null
 

@@ -8,6 +8,7 @@ import MoodboardViewer from '../components/MoodboardViewer';
 import { useNotification } from '../contexts/NotificationContext';
 import { localStorageKey } from '../components/ApiKeyForm';
 import Footer from "../components/Footer";
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 const MoodboardPage: React.FC = () => {
     const { moodboardId } = useParams<{ moodboardId: string }>();
@@ -18,6 +19,8 @@ const MoodboardPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
 
     const isAdmin = localStorage.getItem(localStorageKey) != null;
+
+    useDocumentTitle(moodboard?.name);
 
     const { notify } = useNotification();
 

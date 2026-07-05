@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@fontsource-variable/manrope": "^5.2.8",
+    "@fontsource-variable/source-serif-4": "^5.2.9",
     "@headlessui/react": "^2.2.7",
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.1.12",

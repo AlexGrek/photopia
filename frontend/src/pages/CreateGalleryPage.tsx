@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { localStorageKey } from '../components/ApiKeyForm';
 import { useNavigate } from 'react-router';
 import Logo from '../components/Logo';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 // Define the shape of the gallery data.
 interface GalleryData {
@@ -10,6 +11,8 @@ interface GalleryData {
 }
 
 const CreateGalleryPage: React.FC = () => {
+    useDocumentTitle('New gallery');
+
     const [gallery, setGallery] = useState<GalleryData>({
         name: '',
         author: '',

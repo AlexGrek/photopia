@@ -175,7 +175,7 @@ const MoodboardViewer: React.FC<MoodboardViewerProps> = ({ moodboard }) => {
             {moodboard.sections.map((section, index) => (
                 <div key={index}>
                     {section.type === 'text' && section.text && (
-                        <Markdown className="prose-lg text-gray-200 leading-relaxed">
+                        <Markdown className="prose-lg text-gray-200 leading-relaxed font-moodboard-serif">
                             {section.text}
                         </Markdown>
                     )}

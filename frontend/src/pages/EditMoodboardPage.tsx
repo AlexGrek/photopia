@@ -33,6 +33,7 @@ import { localStorageKey } from "../components/ApiKeyForm";
 import ConfirmationModal from "../components/ConfirmationModal";
 import Footer from "../components/Footer";
 import Markdown from "../components/Markdown";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const IMAGE_PLACEHOLDER =
   "https://placehold.co/600x600/1f2937/d1d5db?text=Image+Not+Found";
@@ -60,6 +61,8 @@ const EditMoodboardPage: React.FC = () => {
   const fileInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
 
   const { notify } = useNotification();
+
+  useDocumentTitle(moodboard ? `Edit ${moodboard.name}` : undefined);
 
   useEffect(() => {
     const fetchM = async () => {
@@ -483,7 +486,9 @@ const EditMoodboardPage: React.FC = () => {
                 {previewSections[index] ? (
                   <div className="w-full min-h-[9rem] bg-gray-950 rounded-lg p-4 border border-gray-800">
                     {section.text ? (
-                      <Markdown>{section.text}</Markdown>
+                      <Markdown className="font-moodboard-serif">
+                        {section.text}
+                      </Markdown>
                     ) : (
                       <p className="text-gray-600 italic">Nothing to preview</p>
                     )}

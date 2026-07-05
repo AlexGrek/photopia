@@ -10,6 +10,7 @@ import { localStorageKey } from '../components/ApiKeyForm';
 import { GalleryViewer } from '../components/GalleryViewer';
 import ConfirmationModal from '../components/ConfirmationModal';
 import Footer from "../components/Footer";
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 const EditGalleryPage: React.FC = () => {
     const { galleryId } = useParams<{ galleryId: string }>();
@@ -20,6 +21,8 @@ const EditGalleryPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
 
     const [deleteOpen, setDeleteOpen] = useState(false);
+
+    useDocumentTitle(gallery ? `Edit ${gallery.name}` : undefined);
 
     const { notify } = useNotification();
 

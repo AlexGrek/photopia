@@ -12,7 +12,7 @@ interface MarkdownProps {
  * Tailwind typography plugin (`prose`); `prose-invert` themes it for the dark UI.
  */
 const Markdown: React.FC<MarkdownProps> = ({ children, className }) => (
-    <div className={`prose prose-invert max-w-none ${className || ''}`}>
+    <div className={`prose prose-invert ${className || ''}`}>
         <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{

@@ -8,6 +8,7 @@ import ApiKeyForm from '../components/ApiKeyForm';
 import ListPageHeader from '../components/ListPageHeader';
 import { localStorageKey } from '../components/ApiKeyForm';
 import Footer from "../components/Footer";
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 const MoodboardListPage: React.FC = () => {
     const [moodboards, setMoodboards] = useState<MoodboardThumbnail[]>([]);
@@ -16,6 +17,8 @@ const MoodboardListPage: React.FC = () => {
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
     const isAdmin = localStorage.getItem(localStorageKey) != null;
+
+    useDocumentTitle('Moodboards');
 
     useEffect(() => {
         const fetchM = async () => {

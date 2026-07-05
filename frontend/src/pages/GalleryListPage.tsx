@@ -7,12 +7,15 @@ import Modal from '../components/Modal';
 import ApiKeyForm from '../components/ApiKeyForm';
 import ListPageHeader from '../components/ListPageHeader';
 import Footer from "../components/Footer";
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 const GalleryListPage: React.FC = () => {
     const [galleries, setGalleries] = useState<GalleryThumbnail[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+    useDocumentTitle('Galleries');
 
     useEffect(() => {
         const fetchG = async () => {
