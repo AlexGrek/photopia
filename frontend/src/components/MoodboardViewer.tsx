@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { AnimatePresence, motion } from 'framer-motion';
+import { X } from 'lucide-react';
 import type { Moodboard, MoodboardImage, MoodboardSection } from '../Models';
-import Modal from './Modal';
 
 const IMAGE_PLACEHOLDER = "https://placehold.co/600x600/1f2937/d1d5db?text=Image+Not+Found";
 
@@ -62,6 +64,27 @@ const MoodboardImagesSection: React.FC<MoodboardImagesSectionProps> = ({ section
         );
     }
 
+    if (view === 'masonry') {
+        return (
+            <div className="columns-2 sm:columns-3 lg:columns-4 gap-4 [column-fill:_balance]">
+                {images.map((image) => (
+                    <div key={image.id} className="mb-4 break-inside-avoid flex flex-col gap-2">
+                        <img
+                            src={image.url}
+                            alt={image.description || ''}
+                            onClick={() => onImageClick(image)}
+                            onError={onImgError}
+                            className="w-full rounded-lg cursor-pointer transition-transform duration-300 hover:scale-[1.02]"
+                        />
+                        {image.description && (
+                            <p className="text-gray-400 text-sm">{image.description}</p>
+                        )}
+                    </div>
+                ))}
+            </div>
+        );
+    }
+
     // grid (default)
     return (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -80,6 +103,62 @@ const MoodboardImagesSection: React.FC<MoodboardImagesSectionProps> = ({ section
                 </div>
             ))}
         </div>
+    );
+};
+
+interface LightboxProps {
+    image: MoodboardImage;
+    onClose: () => void;
+}
+
+const Lightbox: React.FC<LightboxProps> = ({ image, onClose }) => {
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onClose();
+        };
+        window.addEventListener('keydown', onKey);
+        document.body.style.overflow = 'hidden';
+        return () => {
+            window.removeEventListener('keydown', onKey);
+            document.body.style.overflow = '';
+        };
+    }, [onClose]);
+
+    return createPortal(
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={onClose}
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 backdrop-blur-sm p-4"
+        >
+            <button
+                onClick={onClose}
+                aria-label="Close"
+                className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors z-10"
+            >
+                <X size={24} />
+            </button>
+            <motion.img
+                key={image.id}
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                src={image.url}
+                alt={image.description || ''}
+                onError={onImgError}
+                onClick={(e) => e.stopPropagation()}
+                className="max-w-full max-h-[88vh] object-contain rounded-lg shadow-2xl"
+            />
+            {image.description && (
+                <p className="mt-4 text-gray-300 text-sm text-center max-w-2xl">
+                    {image.description}
+                </p>
+            )}
+        </motion.div>,
+        document.body
     );
 };
 
@@ -105,21 +184,11 @@ const MoodboardViewer: React.FC<MoodboardViewerProps> = ({ moodboard }) => {
                 </div>
             ))}
 
-            <Modal
-                isOpen={expandedImage != null}
-                onClose={() => setExpandedImage(null)}
-                title={expandedImage?.description || 'Image'}
-                size="large"
-            >
+            <AnimatePresence>
                 {expandedImage && (
-                    <img
-                        src={expandedImage.url}
-                        alt={expandedImage.description || ''}
-                        onError={onImgError}
-                        className="w-full max-h-[75vh] object-contain rounded-lg"
-                    />
+                    <Lightbox image={expandedImage} onClose={() => setExpandedImage(null)} />
                 )}
-            </Modal>
+            </AnimatePresence>
         </div>
     );
 };

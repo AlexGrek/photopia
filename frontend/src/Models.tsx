@@ -37,7 +37,7 @@ export interface MoodboardImage {
 }
 
 export type MoodboardSectionType = 'text' | 'images';
-export type MoodboardImageView = 'list' | 'grid' | 'horizontalScroller';
+export type MoodboardImageView = 'list' | 'grid' | 'masonry' | 'horizontalScroller';
 
 export interface MoodboardSection {
   type: MoodboardSectionType;

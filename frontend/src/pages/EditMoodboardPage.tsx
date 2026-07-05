@@ -33,6 +33,7 @@ const IMAGE_PLACEHOLDER =
 
 const viewOptions: MoodboardImageView[] = [
   "grid",
+  "masonry",
   "list",
   "horizontalScroller",
 ];
